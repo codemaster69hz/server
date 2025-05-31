@@ -12,6 +12,19 @@ import { v4 as uuidv4 } from 'uuid';
 
 @Resolver(()=> Product)
 export class ProductResolver {
+
+  @Query(() => Product, { nullable: true })
+    async product(
+      @Arg("id") id: string,
+      @Ctx() { em }: MyContext
+    ): Promise<Product | null> {
+      return await em.findOne(
+        Product, 
+        { id }, 
+        { populate: ['variations', 'category', 'reviews.user', 'company'] }
+      );
+    }
+
   @Query(() => [Product])
   async myProducts(@Ctx() { em, req }: MyContext): Promise<Product[]> {
     if (!req.session.companyId) {
@@ -68,25 +81,64 @@ export class ProductResolver {
     return em.find(Product, findm, { populate: ["variations"] });
   }
 
-  @Mutation(()=> Product)
-  async updateProducts(
-    @Arg("productid") id :string,
-    @Arg("input", () => UpdateProductFields) input: UpdateProductFields,
-    @Ctx() { em,req }: MyContext 
-  ): Promise<Product> {
-    if (!req.session.userId) {
-      throw new Error("Not authenticated");
-    }
+  // @Mutation(()=> Product)
+  // async updateProducts(
+  //   @Arg("id") id :string,
+  //   @Arg("input", () => UpdateProductFields) input: UpdateProductFields,
+  //   @Ctx() { em,req }: MyContext 
+  // ): Promise<Product> {
+  //   if (!req.session.companyId) {
+  //     throw new Error("Not authenticated");
+  //   }
 
-    const updateProduct = await em.findOne(Product, { id });
-    if (!updateProduct) {
-      throw new Error("Product not found");
-    } 
+  //   const updateProduct = await em.findOne(Product, { id });
+  //   if (!updateProduct) {
+  //     throw new Error("Product not found");
+  //   } 
 
-    em.assign(updateProduct, input);
-    await em.flush();
-    return updateProduct;
-  }
+  //   em.assign(updateProduct, input);
+  //   await em.persistAndFlush(updateProduct);
+  //   return updateProduct;
+  // }
+
+  @Mutation(() => Product)
+      async updateProducts(
+        @Arg("id") id: string,
+        @Arg("input", () => UpdateProductFields) input: UpdateProductFields,
+        @Ctx() { em, req }: MyContext
+      ): Promise<Product> {
+        if (!req.session.companyId) {
+          throw new Error("Not authenticated");
+        }
+
+        const product = await em.findOne(Product, { id }, { populate: ['variations'] });
+        if (!product) {
+          throw new Error("Product not found");
+        }
+
+        // If name is updated, update the slug too
+        if (input.name && input.name !== product.name) {
+          const baseSlug = slugify(input.name, { lower: true, strict: true });
+          const uuidSuffix = uuidv4().split("-")[0];
+          product.slug = `${baseSlug}-${uuidSuffix}`;
+
+          // Optionally update slugs for variations
+          for (const variation of product.variations) {
+            const variationSuffix = uuidv4().split("-")[0];
+            variation.slug = slugify(
+              `${product.slug}-${variation.size}-${variation.color}-${variationSuffix}`,
+              { lower: true, strict: true }
+            );
+            variation.name = input.name; // update name reference in variation too
+          }
+        }
+
+        em.assign(product, input);
+        await em.persistAndFlush(product);
+
+        return product;
+      }
+
 
   @Query(() => [Product])
   async filteredProducts(
@@ -252,22 +304,26 @@ export class ProductResolver {
 
     @Query(() => PaginatedProducts)
       async paginatedMyProducts(
-        @Ctx() { em }: MyContext,
+        @Ctx() { em, req }: MyContext,
         @Arg("offset", () => Int, { defaultValue: 0 }) offset: number,
         @Arg("limit", () => Int, { defaultValue: 10 }) limit: number
       ): Promise<PaginatedProducts> {
+        if (!req.session.companyId) {
+          throw new Error("Not authenticated");
+        }
+
         const realLimit = Math.min(50, limit);
-      
+        
         const [products, total] = await Promise.all([
-          em.find(Product, {}, {
+          em.find(Product, { company: req.session.companyId }, {
             offset,
             limit: realLimit,
             orderBy: { createdAt: "DESC" },
             populate: ["category", "variations", "reviews"],
           }),
-          em.count(Product, {})
+          em.count(Product, { company: req.session.companyId })
         ]);
-      
+        
         return {
           products,
           total,

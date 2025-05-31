@@ -3,6 +3,8 @@ import { Entity, PrimaryKey, Property, ManyToOne, OneToMany, Collection, Enum } 
 import { Field, ID, ObjectType } from "type-graphql";
 import { User } from "./User";
 import { OrderItem } from "./OrderItem";
+import { registerEnumType } from "type-graphql";
+import { UserAddress } from "./UserAddress";
 
 export enum OrderStatus {
   PENDING = 'pending',
@@ -10,6 +12,11 @@ export enum OrderStatus {
   COMPLETED = 'completed',
   CANCELLED = 'cancelled'
 }
+
+registerEnumType(OrderStatus, {
+  name: "OrderStatus", // this name will be used in the GraphQL schema
+  description: "The status of the order" // optional
+});
 
 @ObjectType()
 @Entity()
@@ -30,13 +37,14 @@ export class Order {
   @Enum(() => OrderStatus)
   status: OrderStatus = OrderStatus.PENDING;
 
-  @Field(() => String)
-  @Property()
-  shippingAddress: string;
+  @Field(() => UserAddress)
+  @ManyToOne(() => UserAddress)
+  shippingAddress!: UserAddress;
 
-  @Field(() => String)
-  @Property()
-  billingAddress: string;
+  @Field(() => UserAddress)
+  @ManyToOne(() => UserAddress)
+  billingAddress!: UserAddress;
+
 
   @Field(() => String)
   @Property({ onCreate: () => new Date() })
@@ -48,21 +56,10 @@ export class Order {
 
   @Field(() => Number)
   @Property({ type: "decimal" })
-  total: number;
+  total!: number;
 
   @Field(() => String, { nullable: true })
   @Property({ nullable: true })
   trackingNumber?: string;
 
-  constructor(
-    user: User,
-    shippingAddress: string,
-    billingAddress: string,
-    total: number
-  ) {
-    this.user = user;
-    this.shippingAddress = shippingAddress;
-    this.billingAddress = billingAddress;
-    this.total = total;
-  }
 }

@@ -27,6 +27,9 @@ const Reviews_1 = require("../entities/Reviews");
 const PaginatedProducts_1 = require("../types/PaginatedProducts");
 const uuid_1 = require("uuid");
 let ProductResolver = class ProductResolver {
+    async product(id, { em }) {
+        return await em.findOne(Products_1.Product, { id }, { populate: ['variations', 'category', 'reviews.user', 'company'] });
+    }
     async myProducts({ em, req }) {
         if (!req.session.companyId) {
             throw new Error("Not authenticated");
@@ -67,16 +70,26 @@ let ProductResolver = class ProductResolver {
         return em.find(Products_1.Product, findm, { populate: ["variations"] });
     }
     async updateProducts(id, input, { em, req }) {
-        if (!req.session.userId) {
+        if (!req.session.companyId) {
             throw new Error("Not authenticated");
         }
-        const updateProduct = await em.findOne(Products_1.Product, { id });
-        if (!updateProduct) {
+        const product = await em.findOne(Products_1.Product, { id }, { populate: ['variations'] });
+        if (!product) {
             throw new Error("Product not found");
         }
-        em.assign(updateProduct, input);
-        await em.flush();
-        return updateProduct;
+        if (input.name && input.name !== product.name) {
+            const baseSlug = (0, slugify_1.default)(input.name, { lower: true, strict: true });
+            const uuidSuffix = (0, uuid_1.v4)().split("-")[0];
+            product.slug = `${baseSlug}-${uuidSuffix}`;
+            for (const variation of product.variations) {
+                const variationSuffix = (0, uuid_1.v4)().split("-")[0];
+                variation.slug = (0, slugify_1.default)(`${product.slug}-${variation.size}-${variation.color}-${variationSuffix}`, { lower: true, strict: true });
+                variation.name = input.name;
+            }
+        }
+        em.assign(product, input);
+        await em.persistAndFlush(product);
+        return product;
     }
     async filteredProducts(search, categoryId, material, minPrice, maxPrice, { em }) {
         const filters = {};
@@ -163,16 +176,19 @@ let ProductResolver = class ProductResolver {
                 : null,
         };
     }
-    async paginatedMyProducts({ em }, offset, limit) {
+    async paginatedMyProducts({ em, req }, offset, limit) {
+        if (!req.session.companyId) {
+            throw new Error("Not authenticated");
+        }
         const realLimit = Math.min(50, limit);
         const [products, total] = await Promise.all([
-            em.find(Products_1.Product, {}, {
+            em.find(Products_1.Product, { company: req.session.companyId }, {
                 offset,
                 limit: realLimit,
                 orderBy: { createdAt: "DESC" },
                 populate: ["category", "variations", "reviews"],
             }),
-            em.count(Products_1.Product, {})
+            em.count(Products_1.Product, { company: req.session.companyId })
         ]);
         return {
             products,
@@ -181,6 +197,14 @@ let ProductResolver = class ProductResolver {
     }
 };
 exports.ProductResolver = ProductResolver;
+__decorate([
+    (0, type_graphql_1.Query)(() => Products_1.Product, { nullable: true }),
+    __param(0, (0, type_graphql_1.Arg)("id")),
+    __param(1, (0, type_graphql_1.Ctx)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", Promise)
+], ProductResolver.prototype, "product", null);
 __decorate([
     (0, type_graphql_1.Query)(() => [Products_1.Product]),
     __param(0, (0, type_graphql_1.Ctx)()),
@@ -218,7 +242,7 @@ __decorate([
 ], ProductResolver.prototype, "getMaterials", null);
 __decorate([
     (0, type_graphql_1.Mutation)(() => Products_1.Product),
-    __param(0, (0, type_graphql_1.Arg)("productid")),
+    __param(0, (0, type_graphql_1.Arg)("id")),
     __param(1, (0, type_graphql_1.Arg)("input", () => ProductInput_1.UpdateProductFields)),
     __param(2, (0, type_graphql_1.Ctx)()),
     __metadata("design:type", Function),

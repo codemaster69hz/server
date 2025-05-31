@@ -66,7 +66,7 @@ __decorate([
     __metadata("design:type", String)
 ], UpdateProductFields.prototype, "description", void 0);
 __decorate([
-    (0, type_graphql_1.Field)({ nullable: true }),
+    (0, type_graphql_1.Field)(() => type_graphql_1.Float, { nullable: true }),
     __metadata("design:type", Number)
 ], UpdateProductFields.prototype, "price", void 0);
 __decorate([
@@ -77,6 +77,10 @@ __decorate([
     (0, type_graphql_1.Field)({ nullable: true }),
     __metadata("design:type", String)
 ], UpdateProductFields.prototype, "weight", void 0);
+__decorate([
+    (0, type_graphql_1.Field)({ nullable: true }),
+    __metadata("design:type", String)
+], UpdateProductFields.prototype, "material", void 0);
 exports.UpdateProductFields = UpdateProductFields = __decorate([
     (0, type_graphql_1.InputType)()
 ], UpdateProductFields);

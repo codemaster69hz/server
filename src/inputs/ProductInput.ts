@@ -39,14 +39,17 @@ export class UpdateProductFields {
   @Field({nullable: true})
   description?: string;
 
-  @Field({nullable: true})
+  @Field(() => Float, {nullable: true})
   price?: number;
 
   @Field({nullable: true})
-  size?: string
+  size?: string;
 
   @Field({nullable: true})
-  weight?: string
+  weight?: string;
+
+  @Field({nullable: true})
+  material?: string;
 }
 
  

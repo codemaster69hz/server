@@ -37,6 +37,10 @@ export class Company {
   @Property({ default: false })
   isEmailVerified!: boolean;
 
+  // @Field(() => Float, { nullable: true })
+  // @Property({ nullable: true })
+  // averageRating?: number;
+
   @Field(()=> String)
   @Property({ onCreate: () => new Date() })
   createdAt: Date = new Date();

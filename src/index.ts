@@ -20,7 +20,8 @@ import { AdminResolver } from './resolvers/admin';
 import { CartResolver } from './resolvers/cartitem';
 import { ReviewResolver } from './resolvers/reviews';
 import { UserAddressResolver } from './resolvers/useraddress';
-// import { OrderResolver } from './resolvers/order';
+import { OrderResolver } from './resolvers/order';
+import { BoughtProductResolver } from './resolvers/boughtproduct';
 // import { ReviewResolver } from './resolvers/reviews';
 
 const cors = require("cors");
@@ -62,7 +63,7 @@ async function main() {
 
   const server = new ApolloServer({
     schema: await buildSchema({
-      resolvers: [ UserResolver, ReviewResolver, UserAddressResolver, PostResolver, CartResolver ,CategoryResolver , CompanyResolver, ProductResolver, ProductVariationResolver, AdminResolver],
+      resolvers: [ UserResolver, ReviewResolver, BoughtProductResolver, OrderResolver, UserAddressResolver, PostResolver, CartResolver ,CategoryResolver , CompanyResolver, ProductResolver, ProductVariationResolver, AdminResolver],
       validate: false,
     }),
   });

@@ -66,7 +66,7 @@ export class ProductVariationResolver {
 
     @Mutation(()=> ProductVariation)
     async updateProductVar(
-        @Arg("variationid") id: string,
+        @Arg("id") id: string,
         @Arg("input", () => UpdateProductVariations) input: UpdateProductVariations,
         @Ctx() { em,req }: MyContext
     ): Promise<ProductVariation> {

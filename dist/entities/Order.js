@@ -14,6 +14,8 @@ const core_1 = require("@mikro-orm/core");
 const type_graphql_1 = require("type-graphql");
 const User_1 = require("./User");
 const OrderItem_1 = require("./OrderItem");
+const type_graphql_2 = require("type-graphql");
+const UserAddress_1 = require("./UserAddress");
 var OrderStatus;
 (function (OrderStatus) {
     OrderStatus["PENDING"] = "pending";
@@ -21,17 +23,17 @@ var OrderStatus;
     OrderStatus["COMPLETED"] = "completed";
     OrderStatus["CANCELLED"] = "cancelled";
 })(OrderStatus || (exports.OrderStatus = OrderStatus = {}));
+(0, type_graphql_2.registerEnumType)(OrderStatus, {
+    name: "OrderStatus",
+    description: "The status of the order"
+});
 let Order = class Order {
-    constructor(user, shippingAddress, billingAddress, total) {
+    constructor() {
         this.id = crypto.randomUUID();
         this.items = new core_1.Collection(this);
         this.status = OrderStatus.PENDING;
         this.createdAt = new Date();
         this.updatedAt = new Date();
-        this.user = user;
-        this.shippingAddress = shippingAddress;
-        this.billingAddress = billingAddress;
-        this.total = total;
     }
 };
 exports.Order = Order;
@@ -56,14 +58,14 @@ __decorate([
     __metadata("design:type", String)
 ], Order.prototype, "status", void 0);
 __decorate([
-    (0, type_graphql_1.Field)(() => String),
-    (0, core_1.Property)(),
-    __metadata("design:type", String)
+    (0, type_graphql_1.Field)(() => UserAddress_1.UserAddress),
+    (0, core_1.ManyToOne)(() => UserAddress_1.UserAddress),
+    __metadata("design:type", UserAddress_1.UserAddress)
 ], Order.prototype, "shippingAddress", void 0);
 __decorate([
-    (0, type_graphql_1.Field)(() => String),
-    (0, core_1.Property)(),
-    __metadata("design:type", String)
+    (0, type_graphql_1.Field)(() => UserAddress_1.UserAddress),
+    (0, core_1.ManyToOne)(() => UserAddress_1.UserAddress),
+    __metadata("design:type", UserAddress_1.UserAddress)
 ], Order.prototype, "billingAddress", void 0);
 __decorate([
     (0, type_graphql_1.Field)(() => String),
@@ -87,7 +89,6 @@ __decorate([
 ], Order.prototype, "trackingNumber", void 0);
 exports.Order = Order = __decorate([
     (0, type_graphql_1.ObjectType)(),
-    (0, core_1.Entity)(),
-    __metadata("design:paramtypes", [User_1.User, String, String, Number])
+    (0, core_1.Entity)()
 ], Order);
 //# sourceMappingURL=Order.js.map

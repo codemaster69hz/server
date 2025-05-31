@@ -1,285 +1,175 @@
+// import { Resolver, Mutation, Query, Arg, Ctx, InputType, Field, Int, ObjectType } from "type-graphql";
+// import { Review, ReviewSentiment } from "../entities/Reviews";
+// import { Product } from "../entities/Products";
 // import { User } from "../entities/User";
-// import { Company } from "../entities/Company";
-// require("dotenv").config();
-// import { MyContext } from "src/types";
-// import { Resolver, InputType, Arg, Field, Ctx, Mutation, ObjectType, Query } from "type-graphql";
-// import argon2 from "argon2";
-// import { COOKIE_NAME } from "../constants";
-// import Redis from "ioredis";
-// import nodemailer from "nodemailer";
-// import { FieldError } from "../shared/ferror";
+// import { MyContext } from "../types";
+// import { registerEnumType } from "type-graphql";
 
-// const redis = new Redis();
-
-// const transporter = nodemailer.createTransport({
-//     service: "gmail",
-//     auth: {
-//         user: process.env.EMAIL_USER,
-//         pass: process.env.EMAIL_PASS,
-//     },
+// registerEnumType(ReviewSentiment, {
+//   name: "ReviewSentiment", // this name will be used in GraphQL schema
+//   description: "Sentiment of the review",
 // });
 
-// // Type for location data
-// @ObjectType()
-// class LocationData {
-//     @Field(() => String, { nullable: true })
-//     ip?: string;
-
-//     @Field(() => String, { nullable: true })
-//     country?: string;
-
-//     @Field(() => String, { nullable: true })
-//     city?: string;
-
-//     @Field(() => String, { nullable: true })
-//     region?: string;
-
-//     @Field(() => Number, { nullable: true })
-//     latitude?: number;
-
-//     @Field(() => Number, { nullable: true })
-//     longitude?: number;
-// }
-
 // @InputType()
-// class RegisterInput {
-//     @Field()
-//     username!: string;
-    
-//     @Field()
-//     email!: string;
-    
-//     @Field()
-//     password!: string;
-    
-//     @Field()
-//     contact!: number;
-// }
+// class ReviewInput {
+//   @Field(() => String) // Changed from Int to String since IDs are often strings
+//   productId!: string;
 
-// @InputType()
-// class LoginInput {
-//     @Field()
-//     username!: string;
+//   @Field(() => String)
+//   comment!: string;
 
-//     @Field()
-//     password!: string;
+//   @Field(() => Int)
+//   rating!: number; // 1-5
 
-//     @Field()
-//     email!: string;
-// }
-
-// @InputType()
-// class VerifyCodeInput {
-//     @Field()
-//     email!: string;
-    
-//     @Field()
-//     code!: string;
+//   @Field(() => ReviewSentiment, { nullable: true })
+//   sentiment?: ReviewSentiment // New field  
 // }
 
 // @ObjectType()
-// class UserResponse {
-//     @Field(() => [FieldError], { nullable: true })
-//     errors?: FieldError[];
+// class PaginatedReviews {
+//   @Field(() => [Review])
+//   items!: Review[];
 
-//     @Field(() => User, { nullable: true })
-//     user?: User;
+//   @Field(() => Int)
+//   total!: number;
 
-//     @Field(() => LocationData, { nullable: true })
-//     location?: LocationData;
+//   @Field(() => Boolean)
+//   hasMore!: boolean;
 // }
 
-// // Helper function to get client IP
-// function getClientIp(req: any): string {
-//     const forwarded = req.headers['x-forwarded-for'];
-//     if (typeof forwarded === 'string') {
-//         return forwarded.split(',')[0].trim();
-//     }
-//     return req.socket.remoteAddress || '';
-// }
+// const MIN_RATING = 1;
+// const MAX_RATING = 5;
 
-// // Helper function to fetch location data
-// async function getLocationFromIp(ip: string): Promise<LocationData> {
-//     if (ip === '::1' || ip === '127.0.0.1') {
-//         return {
-//             ip,
-//             country: 'Localhost',
-//             city: 'Development'
-//         };
-//     }
+// @Resolver(() => Review)
+// export class ReviewResolver {
+//   // --------------------------
+//   // MUTATIONS
+//   // --------------------------
 
-//     try {
-//         // Using ip-api.com
-//         const response = await fetch(`https://ip-api.com/json/${ip}?fields=status,message,country,regionName,city,lat,lon,query`);
-//         const data = await response.json();
+//   private determineSentiment(rating: number): ReviewSentiment {
+//     if (rating >= 4) return ReviewSentiment.POSITIVE;
+//     if (rating === 3) return ReviewSentiment.NEUTRAL;
+//     return ReviewSentiment.NEGATIVE;
+//   }
 
-//         if (data.status !== 'success') {
-//             throw new Error(data.message || 'Failed to fetch location');
-//         }
+//   @Mutation(() => Review)
+//   async createReview(
+//     @Arg("input") input: ReviewInput,
+//     @Ctx() { em, req }: MyContext
+//   ): Promise<Review> {
+//     if (!req.session.userId) throw new Error("Not authenticated");
 
-//         return {
-//             ip: data.query,
-//             country: data.country,
-//             city: data.city,
-//             region: data.regionName,
-//             latitude: data.lat,
-//             longitude: data.lon
-//         };
-//     } catch (error) {
-//         console.error('Location fetch error:', error);
-//         return {
-//             ip,
-//             country: 'Unknown',
-//             city: 'Unknown'
-//         };
-//     }
-// }
-
-// @Resolver()
-// export class UserResolver {
-//     @Query(() => User, { nullable: true })
-//     async me(@Ctx() { req, em }: MyContext) {
-//         if (!req.session.userId) {
-//             return null;
-//         }
-//         return await em.findOne(User, { id: req.session.userId as string });
+//     // Validate rating
+//     if (!Number.isInteger(input.rating) || input.rating < MIN_RATING || input.rating > MAX_RATING) {
+//       throw new Error(`Rating must be an integer between ${MIN_RATING}-${MAX_RATING}`);
 //     }
 
-//     @Mutation(() => UserResponse)
-//     async register(
-//         @Arg("options") options: RegisterInput,
-//         @Ctx() { em }: MyContext
-//     ): Promise<UserResponse> {
-//         const existingSeller = await em.findOne(Company, { email: options.email });
-//         const existingUser = await em.findOne(User, { username: options.username });
-        
-//         if (existingUser) {
-//             return { errors: [{ field: "username", message: "Username already taken" }] };
-//         }
-//         if (existingSeller) {
-//             return { errors: [{ field: "email", message: "Email is already registered as a seller." }] };
-//         }
-//         if (options.username.length <= 3) {
-//             return { errors: [{ field: "username", message: "Username is too short" }] };
-//         }
-//         if (options.password.length <= 5) {
-//             return { errors: [{ field: "password", message: "Password is too short" }] };
-//         }
+//     const [user, product] = await Promise.all([
+//       em.findOne(User, { id: req.session.userId }),
+//       em.findOne(Product, { id: input.productId })
+//     ]);
 
-//         const hashedPassword = await argon2.hash(options.password);
-//         const user = em.create(User, {  
-//             username: options.username,
-//             password: hashedPassword,
-//             contact: options.contact,
-//             email: options.email,
-//             isEmailVerified: false,
-//             isPhoneVerified: false,
-//             createdAt: new Date(),
-//             updatedAt: new Date(),
-//         });
-//         await em.persistAndFlush(user);
+//     if (!user || !product) throw new Error("User or product not found");
 
-//         const emailCode = Math.floor(100000 + Math.random() * 900000).toString();
-//         await redis.set(`emailCode:${user.email}`, emailCode, "EX", 600);
+//     // Check for existing review
+//     const existingReview = await em.findOne(Review, {
+//       user: user.id,
+//       product: product.id
+//     });
+//     if (existingReview) throw new Error("You already reviewed this product");
 
-//         await transporter.sendMail({
-//             from: process.env.EMAIL_USER,
-//             to: user.email,
-//             subject: "Verify Your Email",
-//             text: `Your verification code is: ${emailCode}`,
-//         });
-
-//         return { user };
+//     // Initialize product review stats if undefined
+//     if (product.averageRating === undefined) {
+//       product.averageRating = 0;
+//     }
+//     if (product.reviewCount === undefined) {
+//       product.reviewCount = 0;
 //     }
 
-//     @Mutation(() => UserResponse)
-//     async verifyCode(
-//         @Arg("input") input: VerifyCodeInput,
-//         @Ctx() { em }: MyContext
-//     ): Promise<UserResponse> {
-//         const user = await em.findOne(User, { email: input.email });
+//     let sentiment = input.sentiment;
+//       if (!sentiment) {
+//         sentiment = this.determineSentiment(input.rating);
+//       }
 
-//         if (!user) {
-//             return { errors: [{ field: "email", message: "User not found" }] };
+
+//     // Create review
+//     const review = em.create(Review, {
+//       user,
+//       product,
+//       sentiment,
+//       comment: input.comment,
+//       rating: input.rating,
+//       createdAt: new Date(),
+//     });
+
+//     // Update product stats (optimized)
+//     product.reviewCount += 1;
+//     product.averageRating = parseFloat(
+//       ((product.averageRating * (product.reviewCount - 1) + input.rating) / 
+//       product.reviewCount).toFixed(2) // 2 decimal places for more precision
+//     );
+
+//     await em.persistAndFlush([review, product]);
+//     return review;
+//   }
+
+//   // --------------------------
+//   // QUERIES
+//   // --------------------------
+  
+
+//   // @Query(() => [Review])
+//   //   async productReviews(
+//   //   @Arg("productId") productId: string,
+//   //   @Ctx() { em }: MyContext
+//   //   ): Promise<Review[]> {
+//   //   return em.find(
+//   //       Review,
+//   //       { 
+//   //       product: productId,
+//   //       },
+//   //       { 
+//   //       orderBy: { createdAt: 'DESC' },
+//   //       populate: ['user'],
+//   //       // actualLimit: 10 // Some older versions use this
+//   //       }
+//   //   );
+//   //   }
+
+//   // SAME QUERY BUT ONLY PAGINATION LOGIC IS IMPLEMENTED BELOW
+
+//   @Query(() => PaginatedReviews)
+//     async productReviews(
+//       @Arg("productId") productId: string,
+//       @Arg("limit", () => Int, { defaultValue: 10 }) limit: number,
+//       @Arg("offset", () => Int, { defaultValue: 0 }) offset: number,
+//       @Ctx() { em }: MyContext
+//     ): Promise<PaginatedReviews> {
+//       const [reviews, total] = await em.findAndCount(
+//         Review,
+//         { product: productId },
+//         {
+//           orderBy: { createdAt: 'DESC' },
+//           populate: ['user'],
+//           limit,
+//           offset
 //         }
+//       );
 
-//         const storedEmailCode = await redis.get(`emailCode:${input.email}`);
-
-//         if (!storedEmailCode || input.code !== storedEmailCode) {
-//             return { errors: [{ field: "code", message: "Invalid or expired verification code" }] };
-//         }
-
-//         user.isEmailVerified = true;
-//         await em.persistAndFlush(user);
-
-//         await redis.del(`emailCode:${input.email}`);
-
-//         return { user };
+//       return {
+//         items: reviews,
+//         total,
+//         hasMore: offset + limit < total
+//       };
 //     }
 
-//     @Mutation(() => UserResponse)
-//     async login(
-//         @Arg("options") options: LoginInput,
-//         @Ctx() { em, req, res }: MyContext
-//     ): Promise<UserResponse> {
-//         const user = await em.findOne(User, { username: options.username });
-
-//         if (!user) {
-//             return { errors: [{ field: "username", message: "Username doesn't exist" }] };
-//         }
-
-//         if (user.email !== options.email) {
-//             return { errors: [{ field: "email", message: "Invalid Email" }] };
-//         }
-
-//         if (!user.isEmailVerified) {
-//             return { errors: [{ field: "verification", message: "User not verified" }] };
-//         }
-
-//         const valid = await argon2.verify(user.password, options.password);
-//         if (!valid) {
-//             return { errors: [{ field: "password", message: "Incorrect password" }] };
-//         }
-
-//         // Get client IP and location
-//         const ip = getClientIp(req);
-//         const location = await getLocationFromIp(ip);
-
-//         // Set location cookie
-//         res.cookie("user_location", JSON.stringify(location), {
-//             httpOnly: false,
-//             sameSite: "lax",
-//             secure: process.env.NODE_ENV === "production",
-//             maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
-//         });
-
-//         // Save session
-//         req.session.userId = user.id;
-
-//         return { 
-//             user,
-//             location 
-//         };
-//     }
-
-//     @Query(() => [User])
-//     async users(@Ctx() { em }: MyContext): Promise<User[]> {
-//         return em.find(User, {});
-//     }
-
-//     @Mutation(() => Boolean)
-//     logout(@Ctx() { req, res }: MyContext) {
-//         return new Promise((resolve) =>
-//             req.session.destroy((err) => {
-//                 res.clearCookie(COOKIE_NAME);
-//                 res.clearCookie("user_location");
-//                 if (err) {
-//                     console.log(err);
-//                     resolve(false);
-//                     return;
-//                 }
-//                 resolve(true);
-//             })
-//         );
-//     }
+//   @Query(() => [Review])
+//   async userReviews(
+//     @Ctx() { em, req }: MyContext
+//   ): Promise<Review[]> {
+//     if (!req.session.userId) throw new Error("Not authenticated");
+//     return em.find(Review, { user: req.session.userId }, {
+//       populate: ['product']
+//     });
+//   }
 // }

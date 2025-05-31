@@ -108,7 +108,7 @@ __decorate([
 ], ProductVariationResolver.prototype, "createProductVariation", null);
 __decorate([
     (0, type_graphql_1.Mutation)(() => ProductVar_1.ProductVariation),
-    __param(0, (0, type_graphql_1.Arg)("variationid")),
+    __param(0, (0, type_graphql_1.Arg)("id")),
     __param(1, (0, type_graphql_1.Arg)("input", () => ProductVarInput_1.UpdateProductVariations)),
     __param(2, (0, type_graphql_1.Ctx)()),
     __metadata("design:type", Function),

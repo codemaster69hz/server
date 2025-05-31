@@ -1,15 +1,13 @@
-// src/resolvers/OrderResolver.ts
-import { Resolver, Mutation, Arg, Ctx, Query, Authorized } from "type-graphql";
+import { Resolver, Mutation, Arg, Ctx, Query } from "type-graphql";
 import { MyContext } from "../types";
 import { Order, OrderStatus } from "../entities/Order";
 import { OrderItem } from "../entities/OrderItem";
 import { Cart } from "../entities/Cart";
-// import { CartItem } from "../entities/CartItem";
 import { User } from "../entities/User";
+import { UserAddress } from "../entities/UserAddress";
 
 @Resolver(() => Order)
 export class OrderResolver {
-  @Authorized()
   @Query(() => [Order])
   async getOrders(
     @Ctx() { em, req }: MyContext
@@ -18,15 +16,13 @@ export class OrderResolver {
       throw new Error("Not authenticated");
     }
 
-    const orders = await em.find(Order, 
+    return await em.find(
+      Order,
       { user: req.session.userId },
-      { populate: ['items', 'items.product', 'items.variation'] }
+      { populate: ['items', 'items.product', 'items.variation', 'shippingAddress', 'billingAddress'] }
     );
-
-    return orders;
   }
 
-  @Authorized()
   @Query(() => Order, { nullable: true })
   async getOrder(
     @Arg("id") id: string,
@@ -36,73 +32,64 @@ export class OrderResolver {
       throw new Error("Not authenticated");
     }
 
-    const order = await em.findOne(Order, 
+    return await em.findOne(
+      Order,
       { id, user: req.session.userId },
-      { populate: ['items', 'items.product', 'items.variation'] }
+      { populate: ['items', 'items.product', 'items.variation', 'shippingAddress', 'billingAddress'] }
     );
-
-    return order;
   }
 
-  @Authorized()
   @Mutation(() => Order)
   async createOrder(
-    @Arg("shippingAddress") shippingAddress: string,
-    @Arg("billingAddress") billingAddress: string,
+    @Arg("shippingAddressId") shippingAddressId: string,
+    @Arg("billingAddressId") billingAddressId: string,
     @Ctx() { em, req }: MyContext
   ): Promise<Order> {
     if (!req.session.userId) {
       throw new Error("Not authenticated");
     }
 
-    // Get user's cart with items
-    const cart = await em.findOne(Cart, 
-      { user: req.session.userId }, 
-      { populate: ['items', 'items.product', 'items.variation'] }
-    );
+    const [cart, user, shippingAddress, billingAddress] = await Promise.all([
+      em.findOne(Cart, { user: req.session.userId }, { populate: ['items', 'items.product', 'items.variation'] }),
+      em.findOneOrFail(User, { id: req.session.userId }),
+      em.findOneOrFail(UserAddress, { id: shippingAddressId }),
+      em.findOneOrFail(UserAddress, { id: billingAddressId }),
+    ]);
 
-    if (!cart) {
-      throw new Error("Cart not found");
-    }
+    if (!cart) throw new Error("Cart not found");
+    if (cart.items.length === 0) throw new Error("Cannot create order from empty cart");
 
-    if (cart.items.length === 0) {
-      throw new Error("Cannot create order from empty cart");
-    }
-
-    const user = await em.findOneOrFail(User, { id: req.session.userId });
-
-    // Create the order
-    const order = new Order(
+    const order = em.create(Order, {
       user,
+      status: OrderStatus.PROCESSING,
       shippingAddress,
       billingAddress,
-      cart.total
-    );
+      total: cart.total,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    });
 
-    // Convert cart items to order items
     for (const cartItem of cart.items.getItems()) {
-      const orderItem = new OrderItem();
-      orderItem.product = cartItem.product;
-      orderItem.variation = cartItem.variation || undefined;
-      orderItem.quantity = cartItem.quantity;
-      orderItem.price = cartItem.price;
-      orderItem.size = cartItem.size;
-      orderItem.order = order;
-      
+      const orderItem = em.create(OrderItem, {
+        product: cartItem.product,
+        variation: cartItem.variation || undefined,
+        quantity: cartItem.quantity,
+        price: cartItem.price,
+        size: cartItem.size,
+        order,
+        createdAt: new Date()
+      });
+
       order.items.add(orderItem);
-      await em.persist(orderItem);
     }
 
-    // Clear the cart
     await em.removeAndFlush(cart.items.getItems());
     await em.removeAndFlush(cart);
-
     await em.persistAndFlush(order);
 
     return order;
   }
 
-  @Authorized()
   @Mutation(() => Order)
   async updateOrderStatus(
     @Arg("orderId") orderId: string,
@@ -113,32 +100,12 @@ export class OrderResolver {
       throw new Error("Not authenticated");
     }
 
-    const order = await em.findOne(Order, { id: orderId, user: req.session.userId });
-    if (!order) {
-      throw new Error("Order not found");
-    }
+    const order = await em.findOneOrFail(Order, {
+      id: orderId,
+      user: req.session.userId
+    });
 
     order.status = status;
-    await em.persistAndFlush(order);
-
-    return order;
-  }
-
-  @Authorized(['ADMIN']) // Assuming you have role-based auth
-  @Mutation(() => Order)
-  async adminUpdateOrderStatus(
-    @Arg("orderId") orderId: string,
-    @Arg("status") status: OrderStatus,
-    @Arg("trackingNumber", { nullable: true }) trackingNumber: string,
-    @Ctx() { em }: MyContext
-  ): Promise<Order> {
-    const order = await em.findOneOrFail(Order, { id: orderId });
-    order.status = status;
-    
-    if (trackingNumber) {
-      order.trackingNumber = trackingNumber;
-    }
-
     await em.persistAndFlush(order);
 
     return order;

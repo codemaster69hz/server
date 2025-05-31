@@ -25,6 +25,8 @@ const admin_1 = require("./resolvers/admin");
 const cartitem_1 = require("./resolvers/cartitem");
 const reviews_1 = require("./resolvers/reviews");
 const useraddress_1 = require("./resolvers/useraddress");
+const order_1 = require("./resolvers/order");
+const boughtproduct_1 = require("./resolvers/boughtproduct");
 const cors = require("cors");
 const connectRedis = require('connect-redis');
 async function main() {
@@ -54,7 +56,7 @@ async function main() {
     }));
     const server = new server_1.ApolloServer({
         schema: await (0, type_graphql_1.buildSchema)({
-            resolvers: [user_1.UserResolver, reviews_1.ReviewResolver, useraddress_1.UserAddressResolver, post_1.PostResolver, cartitem_1.CartResolver, category_1.CategoryResolver, company_1.CompanyResolver, products_1.ProductResolver, productvar_1.ProductVariationResolver, admin_1.AdminResolver],
+            resolvers: [user_1.UserResolver, reviews_1.ReviewResolver, boughtproduct_1.BoughtProductResolver, order_1.OrderResolver, useraddress_1.UserAddressResolver, post_1.PostResolver, cartitem_1.CartResolver, category_1.CategoryResolver, company_1.CompanyResolver, products_1.ProductResolver, productvar_1.ProductVariationResolver, admin_1.AdminResolver],
             validate: false,
         }),
     });
