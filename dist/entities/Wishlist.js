@@ -9,38 +9,47 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.SavedProduct = void 0;
+exports.Wishlist = void 0;
 const core_1 = require("@mikro-orm/core");
 const type_graphql_1 = require("type-graphql");
 const User_1 = require("./User");
-const Products_1 = require("./Products");
-let SavedProduct = class SavedProduct {
+const WishlistItem_1 = require("./WishlistItem");
+let Wishlist = class Wishlist {
     constructor() {
+        this.id = crypto.randomUUID();
+        this.items = new core_1.Collection(this);
         this.createdAt = new Date();
+        this.updatedAt = new Date();
     }
 };
-exports.SavedProduct = SavedProduct;
+exports.Wishlist = Wishlist;
 __decorate([
-    (0, type_graphql_1.Field)(() => type_graphql_1.Int),
-    (0, core_1.PrimaryKey)(),
-    __metadata("design:type", Number)
-], SavedProduct.prototype, "id", void 0);
+    (0, type_graphql_1.Field)(() => type_graphql_1.ID),
+    (0, core_1.PrimaryKey)({ type: "uuid" }),
+    __metadata("design:type", String)
+], Wishlist.prototype, "id", void 0);
 __decorate([
+    (0, type_graphql_1.Field)(() => User_1.User),
     (0, core_1.ManyToOne)(() => User_1.User),
     __metadata("design:type", User_1.User)
-], SavedProduct.prototype, "user", void 0);
+], Wishlist.prototype, "user", void 0);
 __decorate([
-    (0, core_1.ManyToOne)(() => Products_1.Product),
-    __metadata("design:type", Products_1.Product)
-], SavedProduct.prototype, "product", void 0);
+    (0, type_graphql_1.Field)(() => [WishlistItem_1.WishlistItem]),
+    (0, core_1.OneToMany)(() => WishlistItem_1.WishlistItem, item => item.wishlist, { eager: true }),
+    __metadata("design:type", Object)
+], Wishlist.prototype, "items", void 0);
 __decorate([
     (0, type_graphql_1.Field)(() => Date),
-    (0, core_1.Property)(),
+    (0, core_1.Property)({ onCreate: () => new Date() }),
     __metadata("design:type", Date)
-], SavedProduct.prototype, "createdAt", void 0);
-exports.SavedProduct = SavedProduct = __decorate([
+], Wishlist.prototype, "createdAt", void 0);
+__decorate([
+    (0, type_graphql_1.Field)(() => Date),
+    (0, core_1.Property)({ onUpdate: () => new Date() }),
+    __metadata("design:type", Date)
+], Wishlist.prototype, "updatedAt", void 0);
+exports.Wishlist = Wishlist = __decorate([
     (0, type_graphql_1.ObjectType)(),
-    (0, core_1.Entity)(),
-    (0, core_1.Unique)({ properties: ["user", "product"] })
-], SavedProduct);
+    (0, core_1.Entity)()
+], Wishlist);
 //# sourceMappingURL=Wishlist.js.map

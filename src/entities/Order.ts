@@ -4,7 +4,7 @@ import { Field, ID, ObjectType } from "type-graphql";
 import { User } from "./User";
 import { OrderItem } from "./OrderItem";
 import { registerEnumType } from "type-graphql";
-import { UserAddress } from "./UserAddress";
+// import { UserAddress } from "./UserAddress";
 
 export enum OrderStatus {
   PENDING = 'pending',
@@ -37,15 +37,6 @@ export class Order {
   @Enum(() => OrderStatus)
   status: OrderStatus = OrderStatus.PENDING;
 
-  @Field(() => UserAddress)
-  @ManyToOne(() => UserAddress)
-  shippingAddress!: UserAddress;
-
-  @Field(() => UserAddress)
-  @ManyToOne(() => UserAddress)
-  billingAddress!: UserAddress;
-
-
   @Field(() => String)
   @Property({ onCreate: () => new Date() })
   createdAt: Date = new Date();
@@ -54,12 +45,12 @@ export class Order {
   @Property({ onUpdate: () => new Date() })
   updatedAt: Date = new Date();
 
+  @Field(() => String, { nullable: true })
+  @Property({ onCreate: ()=> new Date()})
+  estimatedDeliveryDate: Date = new Date();
+
   @Field(() => Number)
   @Property({ type: "decimal" })
   total!: number;
-
-  @Field(() => String, { nullable: true })
-  @Property({ nullable: true })
-  trackingNumber?: string;
 
 }

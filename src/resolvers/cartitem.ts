@@ -17,10 +17,16 @@ export class CartResolver {
         throw new Error("Not authenticated");
       }
 
+  // const cart = await em.findOne(Cart, 
+  //   { user: req.session.userId }, 
+  //   { populate: ['items', 'items.product', 'items.variation'] }
+  // );
+
   const cart = await em.findOne(Cart, 
     { user: req.session.userId }, 
-    { populate: ['items', 'items.product', 'items.variation'] }
+    { populate: ['user', 'items', 'items.product', 'items.variation', 'user.addresses'] }
   );
+  
 
   return cart;
 }  
@@ -51,7 +57,7 @@ async addToCart(
     await em.persistAndFlush(cart);
   }
 
-  const product = await em.findOneOrFail(Product, { id: productId });
+  const product = await em.findOneOrFail(Product, { id: productId }, { populate: ['variations']});
 
   let variation: ProductVariation | null = null;
   let price = product.price;

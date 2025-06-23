@@ -1,18 +1,18 @@
 import express, { RequestHandler } from 'express';
 require('dotenv').config();
+import bodyParser from 'body-parser';
+import 'reflect-metadata';
+import session from 'express-session';
+import Redis from 'ioredis';
+import mikroConfig from './mikro-orm.config';
 import { SESSION_SECRET } from './constants';
 import { ApolloServer } from '@apollo/server';
 import { expressMiddleware } from '@apollo/server/express4';
-import bodyParser from 'body-parser';
-import 'reflect-metadata';
 import { MikroORM } from '@mikro-orm/postgresql';
-import mikroConfig from './mikro-orm.config';
 import { buildSchema } from 'type-graphql';
 import { PostResolver } from './resolvers/post';
 import { UserResolver } from './resolvers/user';
 import { CompanyResolver } from './resolvers/company';
-import session from 'express-session';
-import Redis from 'ioredis';
 import { ProductResolver } from './resolvers/products';
 import { ProductVariationResolver } from './resolvers/productvar';
 import { CategoryResolver } from './resolvers/category';
@@ -22,7 +22,7 @@ import { ReviewResolver } from './resolvers/reviews';
 import { UserAddressResolver } from './resolvers/useraddress';
 import { OrderResolver } from './resolvers/order';
 import { BoughtProductResolver } from './resolvers/boughtproduct';
-// import { ReviewResolver } from './resolvers/reviews';
+import { WishlistResolver } from './resolvers/wishlist';
 
 const cors = require("cors");
 const connectRedis = require('connect-redis');
@@ -63,7 +63,7 @@ async function main() {
 
   const server = new ApolloServer({
     schema: await buildSchema({
-      resolvers: [ UserResolver, ReviewResolver, BoughtProductResolver, OrderResolver, UserAddressResolver, PostResolver, CartResolver ,CategoryResolver , CompanyResolver, ProductResolver, ProductVariationResolver, AdminResolver],
+      resolvers: [ UserResolver, WishlistResolver, ReviewResolver, BoughtProductResolver, OrderResolver, UserAddressResolver, PostResolver, CartResolver ,CategoryResolver , CompanyResolver, ProductResolver, ProductVariationResolver, AdminResolver],
       validate: false,
     }),
   });

@@ -112,8 +112,12 @@ let ReviewResolver = class ReviewResolver {
         await em.persistAndFlush([review, product]);
         return review;
     }
-    async productReviews(productId, limit, offset, { em }) {
-        const [reviews, total] = await em.findAndCount(Reviews_1.Review, { product: productId }, {
+    async productReviews(slug, limit, offset, { em }) {
+        const product = await em.findOne(Products_1.Product, { slug });
+        if (!product) {
+            throw new Error("Product not found");
+        }
+        const [reviews, total] = await em.findAndCount(Reviews_1.Review, { product: product.id }, {
             orderBy: { createdAt: 'DESC' },
             populate: ['user'],
             limit,
@@ -129,8 +133,52 @@ let ReviewResolver = class ReviewResolver {
         if (!req.session.userId)
             throw new Error("Not authenticated");
         return em.find(Reviews_1.Review, { user: req.session.userId }, {
-            populate: ['product']
+            populate: ['product', 'product.reviews']
         });
+    }
+    async deleteReview(reviewId, { em, req }) {
+        if (!req.session.userId) {
+            throw new Error("Not authenticated");
+        }
+        const review = await em.findOne(Reviews_1.Review, { id: reviewId }, { populate: ['product', 'user'] });
+        if (!review) {
+            throw new Error("Review not found");
+        }
+        if (review.user.id !== req.session.userId) {
+            throw new Error("You can only delete your own reviews");
+        }
+        const product = review.product;
+        if (product.reviewCount === undefined) {
+            product.reviewCount = 0;
+        }
+        if (product.averageRating === undefined) {
+            product.averageRating = 0;
+        }
+        await em.begin();
+        try {
+            await em.removeAndFlush(review);
+            if (product.reviewCount > 0) {
+                product.reviewCount -= 1;
+                if (product.reviewCount === 0) {
+                    product.averageRating = 0;
+                }
+                else {
+                    product.averageRating = parseFloat(((product.averageRating * (product.reviewCount + 1) - review.rating) /
+                        product.reviewCount).toFixed(2));
+                }
+            }
+            else {
+                product.reviewCount = 0;
+                product.averageRating = 0;
+            }
+            await em.persistAndFlush(product);
+            await em.commit();
+            return true;
+        }
+        catch (error) {
+            await em.rollback();
+            throw error;
+        }
     }
 };
 exports.ReviewResolver = ReviewResolver;
@@ -144,7 +192,7 @@ __decorate([
 ], ReviewResolver.prototype, "createReview", null);
 __decorate([
     (0, type_graphql_1.Query)(() => PaginatedReviews),
-    __param(0, (0, type_graphql_1.Arg)("productId")),
+    __param(0, (0, type_graphql_1.Arg)("slug")),
     __param(1, (0, type_graphql_1.Arg)("limit", () => type_graphql_1.Int, { defaultValue: 10 })),
     __param(2, (0, type_graphql_1.Arg)("offset", () => type_graphql_1.Int, { defaultValue: 0 })),
     __param(3, (0, type_graphql_1.Ctx)()),
@@ -159,6 +207,14 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], ReviewResolver.prototype, "userReviews", null);
+__decorate([
+    (0, type_graphql_1.Mutation)(() => Boolean),
+    __param(0, (0, type_graphql_1.Arg)("reviewId")),
+    __param(1, (0, type_graphql_1.Ctx)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", Promise)
+], ReviewResolver.prototype, "deleteReview", null);
 exports.ReviewResolver = ReviewResolver = __decorate([
     (0, type_graphql_1.Resolver)(() => Reviews_1.Review)
 ], ReviewResolver);

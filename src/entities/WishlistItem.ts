@@ -1,14 +1,14 @@
-// src/entities/OrderItem.ts
-import { Entity, PrimaryKey, Property, ManyToOne } from "@mikro-orm/core";
+// src/entities/CartItem.ts
+import { Entity, PrimaryKey, Property, ManyToOne, Unique } from "@mikro-orm/core";
 import { Field, ID, ObjectType } from "type-graphql";
-import { Order } from "./Order";
+import { Wishlist } from "./Wishlist";
 import { Product } from "./Products";
 import { ProductVariation } from "./ProductVar";
-import { User } from "./User";
 
+@Unique({ properties: ['product', 'variation', 'wishlist'] })
 @ObjectType()
 @Entity()
-export class OrderItem {
+export class WishlistItem {
   @Field(() => ID)
   @PrimaryKey({ type: "uuid" })
   id: string = crypto.randomUUID();
@@ -21,14 +21,6 @@ export class OrderItem {
   @ManyToOne(() => ProductVariation, { nullable: true })
   variation?: ProductVariation;
 
-  @Field(()=> User, {nullable: true})
-  @ManyToOne(()=> User, {nullable:true})
-  user!: User;
-
-  @Field(() => Number)
-  @Property({ type: "integer" })
-  quantity!: number;
-
   @Field(() => Number)
   @Property({ type: "decimal" })
   price!: number;
@@ -37,11 +29,15 @@ export class OrderItem {
   @Property({ nullable: true })
   size?: string;
 
-  @Field(() => Order)
-  @ManyToOne(() => Order)
-  order!: Order;
+  @Field(() => Wishlist)
+  @ManyToOne(() => Wishlist)
+  wishlist!: Wishlist;
 
   @Field(() => String)
   @Property({ onCreate: () => new Date() })
   createdAt: Date = new Date();
+
+  @Field(() => String)
+  @Property({ onUpdate: () => new Date() })
+  updatedAt: Date = new Date();
 }

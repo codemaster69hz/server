@@ -139,29 +139,37 @@ export class ReviewResolver {
   // SAME QUERY BUT ONLY PAGINATION LOGIC IS IMPLEMENTED BELOW
 
   @Query(() => PaginatedReviews)
-    async productReviews(
-      @Arg("productId") productId: string,
-      @Arg("limit", () => Int, { defaultValue: 10 }) limit: number,
-      @Arg("offset", () => Int, { defaultValue: 0 }) offset: number,
-      @Ctx() { em }: MyContext
-    ): Promise<PaginatedReviews> {
-      const [reviews, total] = await em.findAndCount(
-        Review,
-        { product: productId },
-        {
-          orderBy: { createdAt: 'DESC' },
-          populate: ['user'],
-          limit,
-          offset
+      async productReviews(
+        @Arg("slug") slug: string,
+        @Arg("limit", () => Int, { defaultValue: 10 }) limit: number,
+        @Arg("offset", () => Int, { defaultValue: 0 }) offset: number,
+        @Ctx() { em }: MyContext
+      ): Promise<PaginatedReviews> {
+        // First find the product by slug
+        const product = await em.findOne(Product, { slug });
+        
+        if (!product) {
+          throw new Error("Product not found");
         }
-      );
 
-      return {
-        items: reviews,
-        total,
-        hasMore: offset + limit < total
-      };
-    }
+        // Then find reviews for this product's ID
+        const [reviews, total] = await em.findAndCount(
+          Review,
+          { product: product.id }, // Use the actual UUID here
+          {
+            orderBy: { createdAt: 'DESC' },
+            populate: ['user'],
+            limit,
+            offset
+          }
+        );
+
+  return {
+    items: reviews,
+    total,
+    hasMore: offset + limit < total
+  };
+}
 
   @Query(() => [Review])
   async userReviews(
@@ -169,7 +177,79 @@ export class ReviewResolver {
   ): Promise<Review[]> {
     if (!req.session.userId) throw new Error("Not authenticated");
     return em.find(Review, { user: req.session.userId }, {
-      populate: ['product']
+      populate: ['product','product.reviews']
     });
   }
+
+  @Mutation(() => Boolean)
+    async deleteReview(
+    @Arg("reviewId") reviewId: string,
+    @Ctx() { em, req }: MyContext
+    ): Promise<boolean> {
+    if (!req.session.userId) {
+        throw new Error("Not authenticated");
+    }
+
+    // Find the review with the product and user populated
+    const review = await em.findOne(
+        Review,
+        { id: reviewId },
+        { populate: ['product', 'user'] }
+    );
+
+    if (!review) {
+        throw new Error("Review not found");
+    }
+
+    // Check if the current user is the owner of the review
+    if (review.user.id !== req.session.userId) {
+        throw new Error("You can only delete your own reviews");
+    }
+
+    const product = review.product;
+
+    // Initialize reviewCount if undefined
+    if (product.reviewCount === undefined) {
+        product.reviewCount = 0;
+    }
+
+    // Initialize averageRating if undefined
+    if (product.averageRating === undefined) {
+        product.averageRating = 0;
+    }
+
+    // Start a transaction to ensure data consistency
+    await em.begin();
+    try {
+        // Delete the review
+        await em.removeAndFlush(review);
+
+        // Update product stats only if reviewCount > 0 to avoid division by zero
+        if (product.reviewCount > 0) {
+        product.reviewCount -= 1;
+        
+        // If this was the last review, reset average rating
+        if (product.reviewCount === 0) {
+            product.averageRating = 0;
+        } else {
+            // Recalculate average rating
+            product.averageRating = parseFloat(
+            ((product.averageRating * (product.reviewCount + 1) - review.rating) / 
+            product.reviewCount
+            ).toFixed(2)
+        )}
+         } else {
+        // If reviewCount was already 0, just set it to 0 (though this shouldn't happen)
+         product.reviewCount = 0;
+         product.averageRating = 0;
+        }
+        
+        await em.persistAndFlush(product);
+        await em.commit();
+        return true;
+    } catch (error) {
+        await em.rollback();
+        throw error;
+    }
+    }
 }

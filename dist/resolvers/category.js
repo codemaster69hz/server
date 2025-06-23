@@ -59,7 +59,7 @@ let CategoryResolver = class CategoryResolver {
         return await this.categoryRepository.findOne({ id }, { populate: ["products"] });
     }
     async subcategories(parentCategoryId, { em }) {
-        return await em.find(Category_1.Category, { parentCategory: parentCategoryId });
+        return await em.find(Category_1.Category, { parentCategory: parentCategoryId }, { populate: ['products'] });
     }
     async parentCategories({ em }) {
         return await em.find(Category_1.Category, { parentCategory: null });

@@ -35,6 +35,35 @@ export class ProductResolver {
     });
   }
 
+  @Query(() => Product, { nullable: true })
+  async sellerProduct(
+    @Arg("id") id: string,
+    @Ctx() { em, req }: MyContext
+  ): Promise<Product | null> {
+    if (!req.session.companyId) {
+      throw new Error("Not authenticated");
+    }
+
+    const product = await em.findOne(
+      Product, 
+      { id, company: req.session.companyId }, 
+      { 
+        populate: [
+          'variations', 
+          'category', 
+          'reviews.user', 
+          'company'
+        ] 
+      }
+    );
+
+    if (!product) {
+      throw new Error("Product not found or not owned by your company");
+    }
+
+    return product;
+  }
+
   @Query(() => [Product])
   async getSimilarProducts(
     @Arg("category") category: string,
@@ -174,7 +203,7 @@ export class ProductResolver {
       {
         orderBy: { averageRating: "DESC" },
         limit,
-        populate: ["reviews"]
+        populate: ["reviews", "variations"]
       }
     );
   }

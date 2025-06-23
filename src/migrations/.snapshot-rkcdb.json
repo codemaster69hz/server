@@ -1078,6 +1078,272 @@
           "nullable": false,
           "mappedType": "uuid"
         },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "default": "'pending'",
+          "enumItems": [
+            "pending",
+            "processing",
+            "completed",
+            "cancelled"
+          ],
+          "mappedType": "enum"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamptz",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": 6,
+          "mappedType": "datetime"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamptz",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": 6,
+          "mappedType": "datetime"
+        },
+        "estimated_delivery_date": {
+          "name": "estimated_delivery_date",
+          "type": "timestamptz",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": 6,
+          "mappedType": "datetime"
+        },
+        "total": {
+          "name": "total",
+          "type": "numeric(10,0)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "precision": 10,
+          "scale": 0,
+          "mappedType": "decimal"
+        }
+      },
+      "name": "order",
+      "schema": "public",
+      "indexes": [
+        {
+          "keyName": "order_pkey",
+          "columnNames": [
+            "id"
+          ],
+          "composite": false,
+          "constraint": true,
+          "primary": true,
+          "unique": true
+        }
+      ],
+      "checks": [],
+      "foreignKeys": {
+        "order_user_id_foreign": {
+          "constraintName": "order_user_id_foreign",
+          "columnNames": [
+            "user_id"
+          ],
+          "localTableName": "public.order",
+          "referencedColumnNames": [
+            "id"
+          ],
+          "referencedTableName": "public.user",
+          "updateRule": "cascade"
+        }
+      },
+      "nativeEnums": {}
+    },
+    {
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "uuid"
+        },
+        "product_id": {
+          "name": "product_id",
+          "type": "uuid",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "uuid"
+        },
+        "variation_id": {
+          "name": "variation_id",
+          "type": "uuid",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "mappedType": "uuid"
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "uuid",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "mappedType": "uuid"
+        },
+        "quantity": {
+          "name": "quantity",
+          "type": "int",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "integer"
+        },
+        "price": {
+          "name": "price",
+          "type": "numeric(10,0)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "precision": 10,
+          "scale": 0,
+          "mappedType": "decimal"
+        },
+        "size": {
+          "name": "size",
+          "type": "varchar(255)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "length": 255,
+          "mappedType": "string"
+        },
+        "order_id": {
+          "name": "order_id",
+          "type": "uuid",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "uuid"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamptz",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": 6,
+          "mappedType": "datetime"
+        }
+      },
+      "name": "order_item",
+      "schema": "public",
+      "indexes": [
+        {
+          "keyName": "order_item_pkey",
+          "columnNames": [
+            "id"
+          ],
+          "composite": false,
+          "constraint": true,
+          "primary": true,
+          "unique": true
+        }
+      ],
+      "checks": [],
+      "foreignKeys": {
+        "order_item_product_id_foreign": {
+          "constraintName": "order_item_product_id_foreign",
+          "columnNames": [
+            "product_id"
+          ],
+          "localTableName": "public.order_item",
+          "referencedColumnNames": [
+            "id"
+          ],
+          "referencedTableName": "public.product",
+          "updateRule": "cascade"
+        },
+        "order_item_variation_id_foreign": {
+          "constraintName": "order_item_variation_id_foreign",
+          "columnNames": [
+            "variation_id"
+          ],
+          "localTableName": "public.order_item",
+          "referencedColumnNames": [
+            "id"
+          ],
+          "referencedTableName": "public.product_variation",
+          "deleteRule": "set null",
+          "updateRule": "cascade"
+        },
+        "order_item_user_id_foreign": {
+          "constraintName": "order_item_user_id_foreign",
+          "columnNames": [
+            "user_id"
+          ],
+          "localTableName": "public.order_item",
+          "referencedColumnNames": [
+            "id"
+          ],
+          "referencedTableName": "public.user",
+          "deleteRule": "set null",
+          "updateRule": "cascade"
+        },
+        "order_item_order_id_foreign": {
+          "constraintName": "order_item_order_id_foreign",
+          "columnNames": [
+            "order_id"
+          ],
+          "localTableName": "public.order_item",
+          "referencedColumnNames": [
+            "id"
+          ],
+          "referencedTableName": "public.order",
+          "updateRule": "cascade"
+        }
+      },
+      "nativeEnums": {}
+    },
+    {
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "uuid"
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "uuid",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "uuid"
+        },
         "created_at": {
           "name": "created_at",
           "type": "timestamptz",
@@ -1449,6 +1715,26 @@
           "nullable": false,
           "length": 255,
           "mappedType": "string"
+        },
+        "is_default_shipping": {
+          "name": "is_default_shipping",
+          "type": "boolean",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "default": "false",
+          "mappedType": "boolean"
+        },
+        "is_default_billing": {
+          "name": "is_default_billing",
+          "type": "boolean",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "default": "false",
+          "mappedType": "boolean"
         }
       },
       "name": "user_address",
@@ -1512,40 +1798,6 @@
           "nullable": false,
           "mappedType": "uuid"
         },
-        "status": {
-          "name": "status",
-          "type": "text",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "default": "'pending'",
-          "enumItems": [
-            "pending",
-            "processing",
-            "completed",
-            "cancelled"
-          ],
-          "mappedType": "enum"
-        },
-        "shipping_address_id": {
-          "name": "shipping_address_id",
-          "type": "uuid",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "mappedType": "uuid"
-        },
-        "billing_address_id": {
-          "name": "billing_address_id",
-          "type": "uuid",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "mappedType": "uuid"
-        },
         "created_at": {
           "name": "created_at",
           "type": "timestamptz",
@@ -1565,34 +1817,13 @@
           "nullable": false,
           "length": 6,
           "mappedType": "datetime"
-        },
-        "total": {
-          "name": "total",
-          "type": "numeric(10,0)",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "precision": 10,
-          "scale": 0,
-          "mappedType": "decimal"
-        },
-        "tracking_number": {
-          "name": "tracking_number",
-          "type": "varchar(255)",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": true,
-          "length": 255,
-          "mappedType": "string"
         }
       },
-      "name": "order",
+      "name": "wishlist",
       "schema": "public",
       "indexes": [
         {
-          "keyName": "order_pkey",
+          "keyName": "wishlist_pkey",
           "columnNames": [
             "id"
           ],
@@ -1604,40 +1835,16 @@
       ],
       "checks": [],
       "foreignKeys": {
-        "order_user_id_foreign": {
-          "constraintName": "order_user_id_foreign",
+        "wishlist_user_id_foreign": {
+          "constraintName": "wishlist_user_id_foreign",
           "columnNames": [
             "user_id"
           ],
-          "localTableName": "public.order",
+          "localTableName": "public.wishlist",
           "referencedColumnNames": [
             "id"
           ],
           "referencedTableName": "public.user",
-          "updateRule": "cascade"
-        },
-        "order_shipping_address_id_foreign": {
-          "constraintName": "order_shipping_address_id_foreign",
-          "columnNames": [
-            "shipping_address_id"
-          ],
-          "localTableName": "public.order",
-          "referencedColumnNames": [
-            "id"
-          ],
-          "referencedTableName": "public.user_address",
-          "updateRule": "cascade"
-        },
-        "order_billing_address_id_foreign": {
-          "constraintName": "order_billing_address_id_foreign",
-          "columnNames": [
-            "billing_address_id"
-          ],
-          "localTableName": "public.order",
-          "referencedColumnNames": [
-            "id"
-          ],
-          "referencedTableName": "public.user_address",
           "updateRule": "cascade"
         }
       },
@@ -1672,15 +1879,6 @@
           "nullable": true,
           "mappedType": "uuid"
         },
-        "quantity": {
-          "name": "quantity",
-          "type": "int",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "mappedType": "integer"
-        },
         "price": {
           "name": "price",
           "type": "numeric(10,0)",
@@ -1702,8 +1900,8 @@
           "length": 255,
           "mappedType": "string"
         },
-        "order_id": {
-          "name": "order_id",
+        "wishlist_id": {
+          "name": "wishlist_id",
           "type": "uuid",
           "unsigned": false,
           "autoincrement": false,
@@ -1720,13 +1918,35 @@
           "nullable": false,
           "length": 6,
           "mappedType": "datetime"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamptz",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": 6,
+          "mappedType": "datetime"
         }
       },
-      "name": "order_item",
+      "name": "wishlist_item",
       "schema": "public",
       "indexes": [
         {
-          "keyName": "order_item_pkey",
+          "keyName": "wishlist_item_product_id_variation_id_wishlist_id_unique",
+          "columnNames": [
+            "product_id",
+            "variation_id",
+            "wishlist_id"
+          ],
+          "composite": true,
+          "constraint": true,
+          "primary": false,
+          "unique": true
+        },
+        {
+          "keyName": "wishlist_item_pkey",
           "columnNames": [
             "id"
           ],
@@ -1738,24 +1958,24 @@
       ],
       "checks": [],
       "foreignKeys": {
-        "order_item_product_id_foreign": {
-          "constraintName": "order_item_product_id_foreign",
+        "wishlist_item_product_id_foreign": {
+          "constraintName": "wishlist_item_product_id_foreign",
           "columnNames": [
             "product_id"
           ],
-          "localTableName": "public.order_item",
+          "localTableName": "public.wishlist_item",
           "referencedColumnNames": [
             "id"
           ],
           "referencedTableName": "public.product",
           "updateRule": "cascade"
         },
-        "order_item_variation_id_foreign": {
-          "constraintName": "order_item_variation_id_foreign",
+        "wishlist_item_variation_id_foreign": {
+          "constraintName": "wishlist_item_variation_id_foreign",
           "columnNames": [
             "variation_id"
           ],
-          "localTableName": "public.order_item",
+          "localTableName": "public.wishlist_item",
           "referencedColumnNames": [
             "id"
           ],
@@ -1763,16 +1983,16 @@
           "deleteRule": "set null",
           "updateRule": "cascade"
         },
-        "order_item_order_id_foreign": {
-          "constraintName": "order_item_order_id_foreign",
+        "wishlist_item_wishlist_id_foreign": {
+          "constraintName": "wishlist_item_wishlist_id_foreign",
           "columnNames": [
-            "order_id"
+            "wishlist_id"
           ],
-          "localTableName": "public.order_item",
+          "localTableName": "public.wishlist_item",
           "referencedColumnNames": [
             "id"
           ],
-          "referencedTableName": "public.order",
+          "referencedTableName": "public.wishlist",
           "updateRule": "cascade"
         }
       },

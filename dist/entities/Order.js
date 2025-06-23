@@ -15,7 +15,6 @@ const type_graphql_1 = require("type-graphql");
 const User_1 = require("./User");
 const OrderItem_1 = require("./OrderItem");
 const type_graphql_2 = require("type-graphql");
-const UserAddress_1 = require("./UserAddress");
 var OrderStatus;
 (function (OrderStatus) {
     OrderStatus["PENDING"] = "pending";
@@ -34,6 +33,7 @@ let Order = class Order {
         this.status = OrderStatus.PENDING;
         this.createdAt = new Date();
         this.updatedAt = new Date();
+        this.estimatedDeliveryDate = new Date();
     }
 };
 exports.Order = Order;
@@ -58,16 +58,6 @@ __decorate([
     __metadata("design:type", String)
 ], Order.prototype, "status", void 0);
 __decorate([
-    (0, type_graphql_1.Field)(() => UserAddress_1.UserAddress),
-    (0, core_1.ManyToOne)(() => UserAddress_1.UserAddress),
-    __metadata("design:type", UserAddress_1.UserAddress)
-], Order.prototype, "shippingAddress", void 0);
-__decorate([
-    (0, type_graphql_1.Field)(() => UserAddress_1.UserAddress),
-    (0, core_1.ManyToOne)(() => UserAddress_1.UserAddress),
-    __metadata("design:type", UserAddress_1.UserAddress)
-], Order.prototype, "billingAddress", void 0);
-__decorate([
     (0, type_graphql_1.Field)(() => String),
     (0, core_1.Property)({ onCreate: () => new Date() }),
     __metadata("design:type", Date)
@@ -78,15 +68,15 @@ __decorate([
     __metadata("design:type", Date)
 ], Order.prototype, "updatedAt", void 0);
 __decorate([
+    (0, type_graphql_1.Field)(() => String, { nullable: true }),
+    (0, core_1.Property)({ onCreate: () => new Date() }),
+    __metadata("design:type", Date)
+], Order.prototype, "estimatedDeliveryDate", void 0);
+__decorate([
     (0, type_graphql_1.Field)(() => Number),
     (0, core_1.Property)({ type: "decimal" }),
     __metadata("design:type", Number)
 ], Order.prototype, "total", void 0);
-__decorate([
-    (0, type_graphql_1.Field)(() => String, { nullable: true }),
-    (0, core_1.Property)({ nullable: true }),
-    __metadata("design:type", String)
-], Order.prototype, "trackingNumber", void 0);
 exports.Order = Order = __decorate([
     (0, type_graphql_1.ObjectType)(),
     (0, core_1.Entity)()

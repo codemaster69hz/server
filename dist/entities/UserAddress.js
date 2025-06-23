@@ -16,6 +16,8 @@ const User_1 = require("./User");
 let UserAddress = class UserAddress {
     constructor() {
         this.id = crypto.randomUUID();
+        this.isDefaultShipping = false;
+        this.isDefaultBilling = false;
     }
 };
 exports.UserAddress = UserAddress;
@@ -61,6 +63,16 @@ __decorate([
     (0, core_1.Property)(),
     __metadata("design:type", String)
 ], UserAddress.prototype, "zipcode", void 0);
+__decorate([
+    (0, type_graphql_1.Field)({ defaultValue: false }),
+    (0, core_1.Property)({ default: false }),
+    __metadata("design:type", Boolean)
+], UserAddress.prototype, "isDefaultShipping", void 0);
+__decorate([
+    (0, type_graphql_1.Field)({ defaultValue: false }),
+    (0, core_1.Property)({ default: false }),
+    __metadata("design:type", Boolean)
+], UserAddress.prototype, "isDefaultBilling", void 0);
 exports.UserAddress = UserAddress = __decorate([
     (0, type_graphql_1.ObjectType)(),
     (0, core_1.Entity)()

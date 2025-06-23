@@ -38,4 +38,13 @@ export class UserAddress {
     @Field()
     @Property()
     zipcode!: string;
+
+    @Field({ defaultValue: false })
+    @Property({ default: false })
+    isDefaultShipping: boolean = false;
+  
+    @Field({ defaultValue: false })
+    @Property({ default: false })
+    isDefaultBilling: boolean = false;
+  
 }

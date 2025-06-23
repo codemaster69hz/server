@@ -45,6 +45,8 @@ export class UserAddressResolver {
         const address = em.create(UserAddress, {
             ...input,
             user,
+            isDefaultShipping: false,
+            isDefaultBilling: false
         });
 
         await em.persistAndFlush(address);

@@ -38,7 +38,7 @@ let UserAddressResolver = class UserAddressResolver {
         const user = await em.findOne(User_1.User, { id: req.session.userId });
         if (!user)
             throw new Error("User not found");
-        const address = em.create(UserAddress_1.UserAddress, Object.assign(Object.assign({}, input), { user }));
+        const address = em.create(UserAddress_1.UserAddress, Object.assign(Object.assign({}, input), { user, isDefaultShipping: false, isDefaultBilling: false }));
         await em.persistAndFlush(address);
         return address;
     }

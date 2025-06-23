@@ -24,7 +24,7 @@ let CartResolver = class CartResolver {
         if (!req.session.userId) {
             throw new Error("Not authenticated");
         }
-        const cart = await em.findOne(Cart_1.Cart, { user: req.session.userId }, { populate: ['items', 'items.product', 'items.variation'] });
+        const cart = await em.findOne(Cart_1.Cart, { user: req.session.userId }, { populate: ['user', 'items', 'items.product', 'items.variation', 'user.addresses'] });
         return cart;
     }
     async addToCart(productId, quantity, variationId, { em, req }) {
@@ -43,7 +43,7 @@ let CartResolver = class CartResolver {
             });
             await em.persistAndFlush(cart);
         }
-        const product = await em.findOneOrFail(Products_1.Product, { id: productId });
+        const product = await em.findOneOrFail(Products_1.Product, { id: productId }, { populate: ['variations'] });
         let variation = null;
         let price = product.price;
         let size;

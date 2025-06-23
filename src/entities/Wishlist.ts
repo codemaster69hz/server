@@ -1,24 +1,29 @@
-// entities/SavedProduct.ts
-import { Entity, Property, PrimaryKey, ManyToOne, Unique } from "@mikro-orm/core";
-import { Field, Int, ObjectType } from "type-graphql";
+// src/entities/Wishlist.ts
+import { Entity, PrimaryKey, ManyToOne, Property, Collection, OneToMany } from "@mikro-orm/core";
+import { Field, ID, ObjectType } from "type-graphql";
 import { User } from "./User";
-import { Product } from "./Products";
+import { WishlistItem } from "./WishlistItem";
 
 @ObjectType()
 @Entity()
-@Unique({ properties: ["user", "product"] }) // Prevent duplicates
-export class SavedProduct {
-  @Field(() => Int)
-  @PrimaryKey()
-  id!: number;
+export class Wishlist {
+  @Field(() => ID)
+  @PrimaryKey({ type: "uuid" })
+  id: string = crypto.randomUUID();
 
+  @Field(() => User)
   @ManyToOne(() => User)
   user!: User;
 
-  @ManyToOne(() => Product)
-  product!: Product;
+  @Field(()=> [WishlistItem])
+  @OneToMany(()=> WishlistItem, item => item.wishlist, { eager: true})
+  items = new Collection<WishlistItem>(this);
 
   @Field(() => Date)
-  @Property()
+  @Property({ onCreate: () => new Date() })
   createdAt: Date = new Date();
+
+  @Field(() => Date)
+  @Property({ onUpdate: () => new Date() })
+  updatedAt: Date = new Date();
 }

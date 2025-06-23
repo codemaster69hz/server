@@ -38,6 +38,23 @@ let ProductResolver = class ProductResolver {
             populate: ['reviews', 'variations']
         });
     }
+    async sellerProduct(id, { em, req }) {
+        if (!req.session.companyId) {
+            throw new Error("Not authenticated");
+        }
+        const product = await em.findOne(Products_1.Product, { id, company: req.session.companyId }, {
+            populate: [
+                'variations',
+                'category',
+                'reviews.user',
+                'company'
+            ]
+        });
+        if (!product) {
+            throw new Error("Product not found or not owned by your company");
+        }
+        return product;
+    }
     async getSimilarProducts(category, productId, { em }) {
         const categoryEntity = await em.findOne(Category_1.Category, { name: category });
         if (!categoryEntity) {
@@ -112,7 +129,7 @@ let ProductResolver = class ProductResolver {
         return em.find(Products_1.Product, {}, {
             orderBy: { averageRating: "DESC" },
             limit,
-            populate: ["reviews"]
+            populate: ["reviews", "variations"]
         });
     }
     async createProduct(input, { em, req }) {
@@ -212,6 +229,14 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], ProductResolver.prototype, "myProducts", null);
+__decorate([
+    (0, type_graphql_1.Query)(() => Products_1.Product, { nullable: true }),
+    __param(0, (0, type_graphql_1.Arg)("id")),
+    __param(1, (0, type_graphql_1.Ctx)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", Promise)
+], ProductResolver.prototype, "sellerProduct", null);
 __decorate([
     (0, type_graphql_1.Query)(() => [Products_1.Product]),
     __param(0, (0, type_graphql_1.Arg)("category")),

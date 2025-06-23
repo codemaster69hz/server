@@ -55,7 +55,7 @@ export class CategoryResolver {
     @Arg("parentCategoryId") parentCategoryId: string,
     @Ctx() { em }: MyContext
   ): Promise<Category[]> {
-    return await em.find(Category, { parentCategory: parentCategoryId });
+    return await em.find(Category, { parentCategory: parentCategoryId }, { populate: ['products'] });
   }
 
   @Query(() => [Category])
