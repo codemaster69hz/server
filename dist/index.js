@@ -33,9 +33,8 @@ async function main() {
     const orm = await postgresql_1.MikroORM.init(mikro_orm_config_1.default);
     await orm.getMigrator().up();
     const sessionSecret = process.env.SESSION_SECRET;
-    const redisurl = process.env.REDIS_URL;
     const app = (0, express_1.default)();
-    const redis = new ioredis_1.default(redisurl);
+    const redis = new ioredis_1.default("redis://default:HKoVGQNMnKosvhQfFyWjjeXwjcbCQUNf@turntable.proxy.rlwy.net:58559");
     const RedisStore = new connectRedis(express_session_1.default);
     app.use(cors({ origin: process.env.CORS_ORIGIN, credentials: true }));
     app.use((0, express_session_1.default)({
