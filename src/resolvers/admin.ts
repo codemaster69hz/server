@@ -18,7 +18,8 @@ import {
   
   require("dotenv").config();
   
-  const redis = new Redis();
+  const redisurl = process.env.REDIS_URL as string;
+  const redis = new Redis(redisurl);
 
   const cookiename = process.env.COOKIE_NAME as string;
   

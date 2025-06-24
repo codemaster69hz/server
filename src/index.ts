@@ -1,5 +1,5 @@
-import express, { RequestHandler } from 'express';
 require('dotenv').config();
+import express, { RequestHandler } from 'express';
 import bodyParser from 'body-parser';
 import 'reflect-metadata';
 import session from 'express-session';
@@ -36,6 +36,8 @@ async function main() {
   const app = express();
   
   const redis = new Redis(redisurl);
+  // const redis = new Redis("redis://default:HKoVGQNMnKosvhQfFyWjjeXwjcbCQUNf@turntable.proxy.rlwy.net:58559");
+
 
   const RedisStore = new connectRedis(session);
 
@@ -82,7 +84,7 @@ async function main() {
   );
 
   app.listen(process.env.PORT, () => {
-    console.log('Server is running');
+    console.log(`Server is running on ${process.env.PORT}`);
   });
 }
 

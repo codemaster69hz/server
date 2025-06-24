@@ -3,8 +3,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const express_1 = __importDefault(require("express"));
 require('dotenv').config();
+const express_1 = __importDefault(require("express"));
 const body_parser_1 = __importDefault(require("body-parser"));
 require("reflect-metadata");
 const express_session_1 = __importDefault(require("express-session"));
@@ -67,7 +67,7 @@ async function main() {
         context: async ({ req, res }) => ({ em: orm.em, req, res }),
     }));
     app.listen(process.env.PORT, () => {
-        console.log('Server is running');
+        console.log(`Server is running on ${process.env.PORT}`);
     });
 }
 main().catch((err) => {

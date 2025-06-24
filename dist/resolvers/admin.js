@@ -23,7 +23,8 @@ const ioredis_1 = __importDefault(require("ioredis"));
 const argon2_1 = __importDefault(require("argon2"));
 const nodemailer_1 = __importDefault(require("nodemailer"));
 require("dotenv").config();
-const redis = new ioredis_1.default();
+const redisurl = process.env.REDIS_URL;
+const redis = new ioredis_1.default(redisurl);
 const cookiename = process.env.COOKIE_NAME;
 const transporter = nodemailer_1.default.createTransport({
     service: "gmail",

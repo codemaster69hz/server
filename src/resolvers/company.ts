@@ -9,7 +9,8 @@ import { COOKIE_NAME } from "../constants";
 import { FieldError } from "../shared/ferror";
 import { User } from "../entities/User";
 
-const redis = new Redis();
+const redisurl = process.env.REDIS_URL as string;
+const redis = new Redis(redisurl);
 
 const transporter = nodemailer.createTransport({
     service: "gmail",

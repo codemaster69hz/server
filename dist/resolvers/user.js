@@ -25,7 +25,8 @@ const constants_1 = require("../constants");
 const ioredis_1 = __importDefault(require("ioredis"));
 const nodemailer_1 = __importDefault(require("nodemailer"));
 const ferror_1 = require("../shared/ferror");
-const redis = new ioredis_1.default();
+const redisurl = process.env.REDIS_URL;
+const redis = new ioredis_1.default(redisurl);
 const transporter = nodemailer_1.default.createTransport({
     service: "gmail",
     auth: {
