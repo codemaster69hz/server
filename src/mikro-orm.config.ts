@@ -1,4 +1,5 @@
-require('dotenv').config();
+import dotenvFlow from 'dotenv-flow';
+dotenvFlow.config();
 import { Post } from './entities/Post';
 import { User } from './entities/User';
 import { __prod__ } from './constants';
