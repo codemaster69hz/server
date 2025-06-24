@@ -3,15 +3,12 @@ require("dotenv").config();
 import { Resolver, InputType, Arg, Field, Ctx, Mutation, ObjectType, Query } from "type-graphql";
 import argon2 from "argon2";
 import { Company } from "../entities/Company";
-import Redis from "ioredis";
 import nodemailer from "nodemailer";
 import { MyContext } from "src/types";
 import { COOKIE_NAME } from "../constants";
 import { FieldError } from "../shared/ferror";
 import { User } from "../entities/User";
-
-const redisurl = process.env.REDIS_URL as string;
-const redis = new Redis(redisurl);
+import { redis } from "../utils/redis";
 
 const transporter = nodemailer.createTransport({
     service: "gmail",

@@ -13,12 +13,9 @@ import {
   import { FieldError } from "../shared/ferror";
   // import { COOKIE_NAME } from "../constants";
   import { Admin } from "../entities/Admin";
-  import Redis from "ioredis";
   import argon2 from "argon2";
   import nodemailer from "nodemailer";
-  
-  const redisurl = process.env.REDIS_URL as string;
-  const redis = new Redis(redisurl);
+  import { redis } from "../utils/redis";
 
   const cookiename = process.env.COOKIE_NAME as string;
   

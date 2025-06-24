@@ -3,7 +3,6 @@ import express, { RequestHandler } from 'express';
 import bodyParser from 'body-parser';
 import 'reflect-metadata';
 import session from 'express-session';
-import Redis from 'ioredis';
 import mikroConfig from './mikro-orm.config';
 import { ApolloServer } from '@apollo/server';
 import { expressMiddleware } from '@apollo/server/express4';
@@ -22,6 +21,7 @@ import { UserAddressResolver } from './resolvers/useraddress';
 import { OrderResolver } from './resolvers/order';
 import { BoughtProductResolver } from './resolvers/boughtproduct';
 import { WishlistResolver } from './resolvers/wishlist';
+import { redis } from "./utils/redis";
 
 const cors = require("cors");
 const connectRedis = require('connect-redis');
@@ -31,14 +31,8 @@ async function main() {
   await orm.getMigrator().up();
 
   const sessionSecret = process.env.SESSION_SECRET as string;
-  const redisurl = process.env.REDIS_URL as string;
-
   const app = express();
   
-  const redis = new Redis(redisurl);
-  // const redis = new Redis("redis://default:HKoVGQNMnKosvhQfFyWjjeXwjcbCQUNf@turntable.proxy.rlwy.net:58559");
-
-
   const RedisStore = new connectRedis(session);
 
   // app.use(cors({ origin: "http://localhost:3000", credentials: true }));

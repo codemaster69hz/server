@@ -5,12 +5,9 @@ import { MyContext } from "src/types";
 import { Resolver, InputType, Arg, Field, Ctx, Mutation, ObjectType, Query } from "type-graphql";
 import argon2 from "argon2";
 import { COOKIE_NAME } from "../constants";
-import Redis from "ioredis";
 import nodemailer from "nodemailer";
 import { FieldError } from "../shared/ferror";
-
-const redisurl = process.env.REDIS_URL as string;
-const redis = new Redis(redisurl);
+import { redis } from "../utils/redis";
 
 const transporter = nodemailer.createTransport({
     service: "gmail",
