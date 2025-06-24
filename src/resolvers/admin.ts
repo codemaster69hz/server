@@ -10,7 +10,7 @@ import {
   } from "type-graphql";
   import { MyContext } from "src/types";
   import { FieldError } from "../shared/ferror";
-  import { COOKIE_NAME } from "../constants";
+  // import { COOKIE_NAME } from "../constants";
   import { Admin } from "../entities/Admin";
   import Redis from "ioredis";
   import argon2 from "argon2";
@@ -19,6 +19,8 @@ import {
   require("dotenv").config();
   
   const redis = new Redis();
+
+  const cookiename = process.env.COOKIE_NAME as string;
   
   const transporter = nodemailer.createTransport({
     service: "gmail",
@@ -189,7 +191,7 @@ import {
     adminLogout(@Ctx() { req, res }: MyContext): Promise<boolean> {
       return new Promise((resolve) => {
         req.session.destroy((err) => {
-          res.clearCookie(COOKIE_NAME);
+          res.clearCookie(cookiename);
           if (err) {
             console.log(err);
             resolve(false);

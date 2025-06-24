@@ -1,6 +1,7 @@
 import { Post } from './entities/Post';
 import { User } from './entities/User';
 import { __prod__ } from './constants';
+require('dotenv').config();
 import { defineConfig, UnderscoreNamingStrategy } from '@mikro-orm/postgresql'; 
 import path from 'path';
 import { Company } from './entities/Company';
@@ -21,9 +22,8 @@ export default defineConfig({
     glob: '!(*.d).{js,ts}',  
   },
   entities: [Post, User, Company, Product, BoughtProduct, WishlistItem, ProductVariation, UserAddress, Order, Category, Admin, CartItem, Review],
-  dbName: 'rkcdb',
   allowGlobalContext: true,
-  password: '12345678',
+  clientUrl: process.env.PSQL_URL,
   namingStrategy: UnderscoreNamingStrategy,
   debug: !__prod__,
 }as Parameters<typeof defineConfig>[0]);

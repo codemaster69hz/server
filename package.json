@@ -23,7 +23,7 @@
     "@mikro-orm/nestjs": "^6.1.1",
     "@mikro-orm/postgresql": "6.3.7",
     "@nestjs/common": "^11.0.11",
-    "@nestjs/core": "^11.0.11",
+    "@nestjs/core": "10",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.3.0",
     "@testing-library/user-event": "^14.6.1",
@@ -78,5 +78,17 @@
       "./dist/mikro-orm.config.js"
     ]
   },
-  "description": ""
+  "description": "",
+  "directories": {
+    "test": "tests"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/codemaster69hz/swork.git"
+  },
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/codemaster69hz/swork/issues"
+  },
+  "homepage": "https://github.com/codemaster69hz/swork#readme"
 }

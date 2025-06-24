@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const Post_1 = require("./entities/Post");
 const User_1 = require("./entities/User");
 const constants_1 = require("./constants");
+require('dotenv').config();
 const postgresql_1 = require("@mikro-orm/postgresql");
 const path_1 = __importDefault(require("path"));
 const Company_1 = require("./entities/Company");
@@ -25,9 +26,8 @@ exports.default = (0, postgresql_1.defineConfig)({
         glob: '!(*.d).{js,ts}',
     },
     entities: [Post_1.Post, User_1.User, Company_1.Company, Products_1.Product, BoughtProduct_1.BoughtProduct, WishlistItem_1.WishlistItem, ProductVar_1.ProductVariation, UserAddress_1.UserAddress, Order_1.Order, Category_1.Category, Admin_1.Admin, CartItem_1.CartItem, Reviews_1.Review],
-    dbName: 'rkcdb',
     allowGlobalContext: true,
-    password: '12345678',
+    clientUrl: process.env.PSQL_URL,
     namingStrategy: postgresql_1.UnderscoreNamingStrategy,
     debug: !constants_1.__prod__,
 });

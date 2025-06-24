@@ -5,7 +5,6 @@ import 'reflect-metadata';
 import session from 'express-session';
 import Redis from 'ioredis';
 import mikroConfig from './mikro-orm.config';
-import { SESSION_SECRET } from './constants';
 import { ApolloServer } from '@apollo/server';
 import { expressMiddleware } from '@apollo/server/express4';
 import { MikroORM } from '@mikro-orm/postgresql';
@@ -31,13 +30,17 @@ async function main() {
   const orm = await MikroORM.init(mikroConfig);
   await orm.getMigrator().up();
 
+  const sessionSecret = process.env.SESSION_SECRET as string;
+  const redisurl = process.env.REDIS_URL as string;
+
   const app = express();
   
-  const redis = new Redis();
+  const redis = new Redis(redisurl);
 
   const RedisStore = new connectRedis(session);
 
-  app.use(cors({ origin: "http://localhost:3000", credentials: true }));
+  // app.use(cors({ origin: "http://localhost:3000", credentials: true }));
+  app.use(cors({ origin: process.env.CORS_ORIGIN, credentials: true }));
 
   app.use(
     session({
@@ -48,7 +51,7 @@ async function main() {
         disableTouch: true,
       }),
       name: process.env.COOKIE_NAME,
-      secret: SESSION_SECRET,
+      secret: sessionSecret,
       resave: false,
       saveUninitialized: false,
       cookie: {

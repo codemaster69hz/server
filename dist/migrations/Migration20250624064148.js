@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Migration20250609100832 = void 0;
+exports.Migration20250624064148 = void 0;
 const migrations_1 = require("@mikro-orm/migrations");
-class Migration20250609100832 extends migrations_1.Migration {
+class Migration20250624064148 extends migrations_1.Migration {
     async up() {
         this.addSql('create table "admin" ("id" uuid not null, "username" text not null, "email" text not null, "password" text not null, "is_email_verified" boolean not null default false, constraint "admin_pkey" primary key ("id"));');
         this.addSql('alter table "admin" add constraint "admin_username_unique" unique ("username");');
@@ -101,5 +101,5 @@ class Migration20250609100832 extends migrations_1.Migration {
         this.addSql('drop table if exists "wishlist_item" cascade;');
     }
 }
-exports.Migration20250609100832 = Migration20250609100832;
-//# sourceMappingURL=Migration20250609100832.js.map
+exports.Migration20250624064148 = Migration20250624064148;
+//# sourceMappingURL=Migration20250624064148.js.map

@@ -18,13 +18,13 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.AdminResolver = void 0;
 const type_graphql_1 = require("type-graphql");
 const ferror_1 = require("../shared/ferror");
-const constants_1 = require("../constants");
 const Admin_1 = require("../entities/Admin");
 const ioredis_1 = __importDefault(require("ioredis"));
 const argon2_1 = __importDefault(require("argon2"));
 const nodemailer_1 = __importDefault(require("nodemailer"));
 require("dotenv").config();
 const redis = new ioredis_1.default();
+const cookiename = process.env.COOKIE_NAME;
 const transporter = nodemailer_1.default.createTransport({
     service: "gmail",
     auth: {
@@ -175,7 +175,7 @@ let AdminResolver = class AdminResolver {
     adminLogout({ req, res }) {
         return new Promise((resolve) => {
             req.session.destroy((err) => {
-                res.clearCookie(constants_1.COOKIE_NAME);
+                res.clearCookie(cookiename);
                 if (err) {
                     console.log(err);
                     resolve(false);
