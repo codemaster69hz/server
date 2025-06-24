@@ -78,6 +78,9 @@
       "./dist/mikro-orm.config.js"
     ]
   },
+  "engines": {
+    "node": ">=20"
+  },
   "description": "",
   "directories": {
     "test": "tests"
