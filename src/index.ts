@@ -31,11 +31,11 @@ async function main() {
   await orm.getMigrator().up();
 
   const sessionSecret = process.env.SESSION_SECRET as string;
-  const redisurl = process.env.REDIS_URL as string;
+  // const redisurl = process.env.REDIS_URL as string;
 
   const app = express();
   
-  const redis = new Redis(redisurl);
+  const redis = new Redis("redis://default:HKoVGQNMnKosvhQfFyWjjeXwjcbCQUNf@turntable.proxy.rlwy.net:58559");
 
   const RedisStore = new connectRedis(session);
 
