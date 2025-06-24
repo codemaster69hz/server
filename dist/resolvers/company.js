@@ -20,13 +20,11 @@ require("dotenv").config();
 const type_graphql_1 = require("type-graphql");
 const argon2_1 = __importDefault(require("argon2"));
 const Company_1 = require("../entities/Company");
-const ioredis_1 = __importDefault(require("ioredis"));
 const nodemailer_1 = __importDefault(require("nodemailer"));
 const constants_1 = require("../constants");
 const ferror_1 = require("../shared/ferror");
 const User_1 = require("../entities/User");
-const redisurl = process.env.REDIS_URL;
-const redis = new ioredis_1.default(redisurl);
+const redis_1 = require("../utils/redis");
 const transporter = nodemailer_1.default.createTransport({
     service: "gmail",
     auth: {
@@ -140,8 +138,8 @@ let CompanyResolver = class CompanyResolver {
         });
         await em.persistAndFlush(company);
         const emailCode = Math.floor(100000 + Math.random() * 900000).toString();
-        await redis.set(`emailCode:${company.email}`, emailCode, "EX", 600);
-        console.log("Stored Email Code:", await redis.get(`emailCode:${company.email}`));
+        await redis_1.redis.set(`emailCode:${company.email}`, emailCode, "EX", 600);
+        console.log("Stored Email Code:", await redis_1.redis.get(`emailCode:${company.email}`));
         await transporter.sendMail({
             from: process.env.EMAIL_USER,
             to: company.email,
@@ -155,13 +153,13 @@ let CompanyResolver = class CompanyResolver {
         if (!company) {
             return { errors: [{ field: "email", message: "Company not found" }] };
         }
-        const storedEmailCode = await redis.get(`emailCode:${input.email}`);
+        const storedEmailCode = await redis_1.redis.get(`emailCode:${input.email}`);
         if (!storedEmailCode || input.code !== storedEmailCode) {
             return { errors: [{ field: "code", message: "Invalid or expired verification code" }] };
         }
         company.isEmailVerified = true;
         await em.persistAndFlush(company);
-        await redis.del(`emailCode:${input.email}`);
+        await redis_1.redis.del(`emailCode:${input.email}`);
         return { company };
     }
     async loginCompany(options, { em, req }) {

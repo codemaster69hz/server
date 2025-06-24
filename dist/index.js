@@ -8,7 +8,6 @@ const express_1 = __importDefault(require("express"));
 const body_parser_1 = __importDefault(require("body-parser"));
 require("reflect-metadata");
 const express_session_1 = __importDefault(require("express-session"));
-const ioredis_1 = __importDefault(require("ioredis"));
 const mikro_orm_config_1 = __importDefault(require("./mikro-orm.config"));
 const server_1 = require("@apollo/server");
 const express4_1 = require("@apollo/server/express4");
@@ -27,20 +26,19 @@ const useraddress_1 = require("./resolvers/useraddress");
 const order_1 = require("./resolvers/order");
 const boughtproduct_1 = require("./resolvers/boughtproduct");
 const wishlist_1 = require("./resolvers/wishlist");
+const redis_1 = require("./utils/redis");
 const cors = require("cors");
 const connectRedis = require('connect-redis');
 async function main() {
     const orm = await postgresql_1.MikroORM.init(mikro_orm_config_1.default);
     await orm.getMigrator().up();
     const sessionSecret = process.env.SESSION_SECRET;
-    const redisurl = process.env.REDIS_URL;
     const app = (0, express_1.default)();
-    const redis = new ioredis_1.default(redisurl);
     const RedisStore = new connectRedis(express_session_1.default);
     app.use(cors({ origin: process.env.CORS_ORIGIN, credentials: true }));
     app.use((0, express_session_1.default)({
         store: new RedisStore({
-            client: redis,
+            client: redis_1.redis,
             prefix: 'sess:',
             ttl: 86400,
             disableTouch: true,

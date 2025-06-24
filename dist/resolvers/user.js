@@ -22,11 +22,9 @@ const Company_1 = require("../entities/Company");
 const type_graphql_1 = require("type-graphql");
 const argon2_1 = __importDefault(require("argon2"));
 const constants_1 = require("../constants");
-const ioredis_1 = __importDefault(require("ioredis"));
 const nodemailer_1 = __importDefault(require("nodemailer"));
 const ferror_1 = require("../shared/ferror");
-const redisurl = process.env.REDIS_URL;
-const redis = new ioredis_1.default(redisurl);
+const redis_1 = require("../utils/redis");
 const transporter = nodemailer_1.default.createTransport({
     service: "gmail",
     auth: {
@@ -223,7 +221,7 @@ let UserResolver = class UserResolver {
         });
         await em.persistAndFlush(user);
         const emailCode = Math.floor(100000 + Math.random() * 900000).toString();
-        await redis.set(`emailCode:${user.email}`, emailCode, "EX", 600);
+        await redis_1.redis.set(`emailCode:${user.email}`, emailCode, "EX", 600);
         console.log("your code is: ", emailCode);
         await transporter.sendMail({
             from: process.env.EMAIL_USER,
@@ -238,13 +236,13 @@ let UserResolver = class UserResolver {
         if (!user) {
             return { errors: [{ field: "email", message: "User not found" }] };
         }
-        const storedEmailCode = await redis.get(`emailCode:${input.email}`);
+        const storedEmailCode = await redis_1.redis.get(`emailCode:${input.email}`);
         if (!storedEmailCode || input.code !== storedEmailCode) {
             return { errors: [{ field: "code", message: "Invalid or expired verification code" }] };
         }
         user.isEmailVerified = true;
         await em.persistAndFlush(user);
-        await redis.del(`emailCode:${input.email}`);
+        await redis_1.redis.del(`emailCode:${input.email}`);
         return { user };
     }
     async login(options, { em, req }) {

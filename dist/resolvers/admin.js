@@ -20,11 +20,9 @@ require("dotenv").config();
 const type_graphql_1 = require("type-graphql");
 const ferror_1 = require("../shared/ferror");
 const Admin_1 = require("../entities/Admin");
-const ioredis_1 = __importDefault(require("ioredis"));
 const argon2_1 = __importDefault(require("argon2"));
 const nodemailer_1 = __importDefault(require("nodemailer"));
-const redisurl = process.env.REDIS_URL;
-const redis = new ioredis_1.default(redisurl);
+const redis_1 = require("../utils/redis");
 const cookiename = process.env.COOKIE_NAME;
 const transporter = nodemailer_1.default.createTransport({
     service: "gmail",
@@ -126,8 +124,8 @@ let AdminResolver = class AdminResolver {
         });
         await em.persistAndFlush(admin);
         const emailCode = Math.floor(100000 + Math.random() * 900000).toString();
-        await redis.set(`emailCode:${admin.email}`, emailCode, "EX", 600);
-        console.log("Stored Email Code:", await redis.get(`emailCode:${admin.email}`));
+        await redis_1.redis.set(`emailCode:${admin.email}`, emailCode, "EX", 600);
+        console.log("Stored Email Code:", await redis_1.redis.get(`emailCode:${admin.email}`));
         try {
             await transporter.sendMail({
                 from: process.env.EMAIL_USER,
@@ -146,13 +144,13 @@ let AdminResolver = class AdminResolver {
         if (!admin) {
             return { errors: [{ field: "email", message: "Admin not found" }] };
         }
-        const storedEmailCode = await redis.get(`emailCode:${input.email}`);
+        const storedEmailCode = await redis_1.redis.get(`emailCode:${input.email}`);
         if (!storedEmailCode || input.code !== storedEmailCode) {
             return { errors: [{ field: "code", message: "Invalid or expired code" }] };
         }
         admin.isEmailVerified = true;
         await em.persistAndFlush(admin);
-        await redis.del(`emailCode:${input.email}`);
+        await redis_1.redis.del(`emailCode:${input.email}`);
         return { admin };
     }
     async adminLogin(options, { req, em }) {
