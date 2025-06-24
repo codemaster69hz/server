@@ -1,7 +1,7 @@
+require('dotenv').config();
 import { Post } from './entities/Post';
 import { User } from './entities/User';
 import { __prod__ } from './constants';
-require('dotenv').config();
 import { defineConfig, UnderscoreNamingStrategy } from '@mikro-orm/postgresql'; 
 import path from 'path';
 import { Company } from './entities/Company';

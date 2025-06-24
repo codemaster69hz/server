@@ -16,13 +16,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AdminResolver = void 0;
+require("dotenv").config();
 const type_graphql_1 = require("type-graphql");
 const ferror_1 = require("../shared/ferror");
 const Admin_1 = require("../entities/Admin");
 const ioredis_1 = __importDefault(require("ioredis"));
 const argon2_1 = __importDefault(require("argon2"));
 const nodemailer_1 = __importDefault(require("nodemailer"));
-require("dotenv").config();
 const redisurl = process.env.REDIS_URL;
 const redis = new ioredis_1.default(redisurl);
 const cookiename = process.env.COOKIE_NAME;

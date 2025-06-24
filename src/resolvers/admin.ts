@@ -1,3 +1,4 @@
+require("dotenv").config();
 import {
     Resolver,
     Mutation,
@@ -15,8 +16,6 @@ import {
   import Redis from "ioredis";
   import argon2 from "argon2";
   import nodemailer from "nodemailer";
-  
-  require("dotenv").config();
   
   const redisurl = process.env.REDIS_URL as string;
   const redis = new Redis(redisurl);

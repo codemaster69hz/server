@@ -3,10 +3,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+require('dotenv').config();
 const Post_1 = require("./entities/Post");
 const User_1 = require("./entities/User");
 const constants_1 = require("./constants");
-require('dotenv').config();
 const postgresql_1 = require("@mikro-orm/postgresql");
 const path_1 = __importDefault(require("path"));
 const Company_1 = require("./entities/Company");

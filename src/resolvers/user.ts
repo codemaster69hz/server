@@ -1,6 +1,6 @@
+require("dotenv").config();
 import { User } from "../entities/User";
 import { Company } from "../entities/Company";
-require("dotenv").config();
 import { MyContext } from "src/types";
 import { Resolver, InputType, Arg, Field, Ctx, Mutation, ObjectType, Query } from "type-graphql";
 import argon2 from "argon2";

@@ -1,3 +1,4 @@
+require("dotenv").config();
 // import { EntityManager } from "@mikro-orm/core";
 import { Resolver, InputType, Arg, Field, Ctx, Mutation, ObjectType, Query } from "type-graphql";
 import argon2 from "argon2";
