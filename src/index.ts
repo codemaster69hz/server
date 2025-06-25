@@ -53,9 +53,9 @@ async function main() {
       cookie: {
         maxAge: 1000 * 60 * 60 * 24 * 7,
         httpOnly: true,
-        secure: false,
+        secure: process.env.NODE_ENV === 'production',
         // sameSite: __prod__? "none" :'lax',
-        sameSite: 'lax',
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
       },
     }) as unknown as RequestHandler
   );
