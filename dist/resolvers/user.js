@@ -154,6 +154,7 @@ function getClientIp(req) {
     return req.socket.remoteAddress || '';
 }
 async function getLocationFromIp(ip) {
+    var _a, _b;
     if (ip === '::1' || ip === '127.0.0.1') {
         return {
             ip,
@@ -162,18 +163,16 @@ async function getLocationFromIp(ip) {
         };
     }
     try {
-        const response = await fetch(`https://ip-api.com/json/${ip}?fields=status,message,country,regionName,city,lat,lon,query`);
+        const response = await fetch(`https://ipinfo.io/${ip}?token=${process.env.IPINFO_TOKEN}`);
         const data = await response.json();
-        if (data.status !== 'success') {
-            throw new Error(data.message || 'Failed to fetch location');
-        }
+        const [latitude, longitude] = (_b = (_a = data.loc) === null || _a === void 0 ? void 0 : _a.split(',')) !== null && _b !== void 0 ? _b : [null, null];
         return {
-            ip: data.query,
+            ip: data.ip,
             country: data.country,
             city: data.city,
-            region: data.regionName,
-            latitude: data.lat,
-            longitude: data.lon
+            region: data.region,
+            latitude: latitude ? parseFloat(latitude) : undefined,
+            longitude: longitude ? parseFloat(longitude) : undefined
         };
     }
     catch (error) {

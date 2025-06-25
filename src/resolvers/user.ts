@@ -119,21 +119,18 @@ async function getLocationFromIp(ip: string): Promise<LocationData> {
     }
 
     try {
-        // Using ip-api.com
-        const response = await fetch(`https://ip-api.com/json/${ip}?fields=status,message,country,regionName,city,lat,lon,query`);
+        const response = await fetch(`https://ipinfo.io/${ip}?token=${process.env.IPINFO_TOKEN}`);
         const data = await response.json();
 
-        if (data.status !== 'success') {
-            throw new Error(data.message || 'Failed to fetch location');
-        }
+        const [latitude, longitude] = data.loc?.split(',') ?? [null, null];
 
         return {
-            ip: data.query,
+            ip: data.ip,
             country: data.country,
             city: data.city,
-            region: data.regionName,
-            latitude: data.lat,
-            longitude: data.lon
+            region: data.region,
+            latitude: latitude ? parseFloat(latitude) : undefined,
+            longitude: longitude ? parseFloat(longitude) : undefined
         };
     } catch (error) {
         console.error('Location fetch error:', error);
